@@ -26,7 +26,7 @@ First of all, if you are a student, you can enroll in my Research Master Course 
 
 ### vizzstat.py
 
-A Python script that takes files produced by [netvizz](http://apps.facebook.com/netvizz) and analyzes them. It gives you statistics like M, SD, min, max, skewness, kurtosis of the number of comments, likes, posts, ...  
+A Python script that takes files produced by [netvizz](http://apps.facebook.com/netvizz) and analyzes them. Currently, it only takes files from Facebook pages (i.e., not groups), but it should be easy to modify it accordingly. It gives you statistics like M, SD, min, max, skewness, kurtosis of the number of comments, likes, posts, ...  
 It furthermore analyzes the length of messages, the most frequently used words, and can produce a network-file for visualization of the word cooccurences. 
 
 ```
