@@ -4,13 +4,13 @@ The Communication Scientist's Toolbox is a collection of scripts that might help
 
 The toolbox is work in progress, and you are more than welcome to contribute. I hope to hear from you!
 
-Damian
+Damian  
 @damian0604
 
-Dr. Damian Trilling
-Lecturer Political Communication and Journalism
-University of Amsterdam
-www.damiantrilling.net
+Dr. Damian Trilling  
+Lecturer Political Communication and Journalism  
+University of Amsterdam  
+www.damiantrilling.net  
 
 
 ##  What do I need?
