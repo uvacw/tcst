@@ -1,6 +1,6 @@
 # The Communication Scientist's Toolbox
 
-The Communication Scientist's Toolbox is a collection of scripts that might help you to analyze and collect data. The aim is to provide students and researchers with the tools they need to conduct Communication Science methods like content analysis or network analysis in a digital environment. It is a toolbox, not a ready-made suite of programs. That means that you have to assemble the building blocks yourself - there is no installer and no user interface, but many possibilities to modify the code so that it fits your needs.
+The Communication Scientist's Toolbox is a collection of scripts that might help you to analyze and collect data. The aim is to provide students and researchers with the tools they need to conduct Communication Science methods like content analysis or network analysis in a digital environment. It is a toolbox, not a ready-made suite of programs. That means that you have to assemble the building blocks yourself - installers and pretty user interfaces don't have priority. The nice thing: Because of this, you have many possibilities to modify the code so that it fits your needs. And, if your dataset grows too big, nothing stops you from running the code on a powerful server. Ever tried something like that with a point-and-click program?
 
 The toolbox is work in progress, and you are more than welcome to contribute. I hope to hear from you!
 
