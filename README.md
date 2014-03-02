@@ -29,7 +29,7 @@ First of all, if you are a student, you can enroll in my Research Master Course 
 A Python script that takes files produced by [netvizz](http://apps.facebook.com/netvizz) and analyzes them. It gives you statistics like M, SD, min, max, skewness, kurtosis of the number of comments, likes, posts, ...  
 It furthermore analyzes the length of messages, the most frequently used words, and can produce a network-file for visualization of the word cooccurences. 
 
-
+```
 usage: vizzstat.py [-h] [--descriptives] [--content] [--cooccurrences]
                    filename {a,b,c}
 
@@ -53,3 +53,4 @@ optional arguments:
                    average message length or the most frequently used words
   --cooccurrences  Equal to --content, but in addition, it procudes a GDF-file
                    with word-cooccurrences
+```
