@@ -1,0 +1,9 @@
+('/Users/dami/Dropbox/uva/tcst/TEST/dist/vizzstat',
+ True,
+ False,
+ None,
+ None,
+ [],
+ None,
+ False,
+ 1393771785)

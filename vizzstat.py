@@ -1,10 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# This is vizzstat, a program to analyze netvizz-files.
+# Copyright (C) 2014 DAMIAN TRILLING
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Please contact me via d dot c dot trilling at uva dot nl
+
+
 from __future__ import division
 import codecs, csv, cStringIO
 import sys
-from unicsv import TsvUnicodeReader, CsvUnicodeReader
 from numpy import mean, std, amin, amax
 from collections import Counter
 from scipy.stats import skew, kurtosis
@@ -270,9 +288,15 @@ def cooccurrences(filename):
 
 # start main program
 
+print "vizzstat  Copyright (C) 2014  Damian Trilling"
+print "This program comes with ABSOLUTELY NO WARRANTY."
+print "This is free software, and you are welcome to redistribute it under certain conditions; read the file LICENSE which you received with this program."
+print "\n"
+
+
 parser=argparse.ArgumentParser(description='This program creates a report with summary statistics of Facebook data. As input, it takes files created py the "page data" function provided by netvizz (apps.facebook.com/netvizz)')
 parser.add_argument("filename", help="The file you want to analyze")
-parser.add_argument("filetype", choices=["a","b","c"], help="a b or c - the file type as provided by netvizz: (a) bipartite graph file in gdf format that shows posts, users, and connections between the two; (b) tabular file (tsv) that lists different metrics for each post; (c) tabular file (tsv) that contains the text of user comments (users anonymized).")
+parser.add_argument("filetype", choices=["a","b","c"], help="a b or c - the file type as provided by netvizz: (a) bipartite graph file in gdf format that shows posts, users, and connections between the two; (b) tabular file (tsv) that lists different metrics for each post; (c) tabular file (tsv) that contains the text of user comments.")
 parser.add_argument("--descriptives", help="Provides general descriptive statistics", action="store_true")
 parser.add_argument("--content", help="Analyzes the content and provides statistics like the average message length or the most frequently used words", action="store_true")
 parser.add_argument("--cooccurrences", help="Equal to --content, but in addition, it procudes a GDF-file with word-cooccurrences", action="store_true")
