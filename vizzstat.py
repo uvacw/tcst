@@ -23,7 +23,7 @@
 from __future__ import division
 import codecs, csv, cStringIO
 import sys
-from numpy import mean, std, amin, amax
+from numpy import mean, std, amin, amax, median
 from collections import Counter
 from scipy.stats import skew, kurtosis
 from collections import defaultdict
@@ -221,7 +221,7 @@ def content(filename,textcolumn):
 		sys.stdout.flush()
 		messages_list.append(row[textcolumn])
 		lengte_list.append(len(row[textcolumn]))
-	print str(i)+" messages, mean length: "+str(mean(lengte_list))+", SD = "+str(std(lengte_list))+", median = "+str(numpy.median(lengte_list))
+	print str(i)+" messages, mean length: "+str(mean(lengte_list))+", SD = "+str(std(lengte_list))+", median = "+str(median(lengte_list))
 	i=0
 	print "Processing message nr. "
 	for message in messages_list:
