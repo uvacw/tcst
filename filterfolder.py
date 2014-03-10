@@ -28,6 +28,12 @@ from os import listdir
 from os.path import isfile, join
 import argparse
 
+print "filterfolder 0.1 Copyright (C) 2014  Damian Trilling"
+print "This program comes with ABSOLUTELY NO WARRANTY."
+print "This is free software, and you are welcome to redistribute it under certain conditions; read the file LICENSE which you received with this program."
+print "\n"
+
+
 parser=argparse.ArgumentParser(description='This program creates a CSV table in which it counts houw often a specific regular expressions occurs in each file in a folder.')
 parser.add_argument("folder", help="The folder you want to analyze. The program assumes each file in the folder to be a plain text file.")
 parser.add_argument("regexp", help="The regular expression you want to search for")
