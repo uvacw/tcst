@@ -54,3 +54,23 @@ optional arguments:
   --cooccurrences  Equal to --content, but in addition, it procudes a GDF-file
                    with word-cooccurrences
 ```
+
+### filterfolder.py
+
+A Python script that takes a folder of your choice (e.g. "c:\myarticles" or "/home/damian/mijnartikelen") and a [regular expression](http://en.wikipedia.org/wiki/Regular_expression) as input and produces a CSV-table in which it counts how often the regular expression is used in each article. This is very useful for filtering: Imagine you have a folder with 10.000 articles (they are assumed to be in plain text format, but you might be able to abuse the program for other formats) and you want to have a look at only those that are on a specific topic, then you can use the output to see which ones that are.
+
+```
+usage: filterfolder.py [-h] folder regexp
+
+This program creates a CSV table in which it counts houw often a specific
+regular expressions occurs in each file in a folder.
+
+positional arguments:
+  folder      The folder you want to analyze. The program assumes each file in
+              the folder to be a plain text file.
+  regexp      The regular expression you want to search for
+
+optional arguments:
+  -h, --help  show this help message and exit
+
+```
