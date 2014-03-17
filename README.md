@@ -74,3 +74,50 @@ optional arguments:
   -h, --help  show this help message and exit
 
 ```
+
+###csv2gdf
+
+A Python script that takes a CSV file and converts it to a GDF file. It is typically used to process CSV files that contain Twitter data (e.g., collected by yourTwapperkeeper), but one could imagine other applications as well.
+It allows different types of networks to be constructed:
+(1) Word co-occurrences (which words are often used together). This module also produces a frequency table of each words.
+(2) Interaction networks, like networks of @mentions, @replies or retweets.
+
+
+```
+usage: csv2gdf.py [-h] [--column COLUMN] [--sendercolumn SENDERCOLUMN]
+                  [--cutoff CUTOFF] [--minedgeweight MINEDGEWEIGHT]
+                  [--stopwordfile STOPWORDFILE] [--retweet] [--reply]
+                  [--allinteractions] [--cooccurrences]
+                  [filename]
+
+This program creates GDF network files based on input data in CSV format.
+
+positional arguments:
+  filename              The file you want to analyze. If you don't provide a
+                        filename, we'll read from STDIN
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --column COLUMN       In which column of the CSV file is the data you want
+                        to analyse. We start counting with 0, so the second
+                        column is called 1. If not provided, we use column 0.
+  --sendercolumn SENDERCOLUMN
+                        In which column of the CSV file is the SENDER (only
+                        for mention and retweet networks). We start counting
+                        with 0, so the second column is called 1. If not
+                        provided, we use column 2.
+  --cutoff CUTOFF       Define a cutoff percentage: The least frequently used
+                        x procent are not included. Write 0.1 for 10 per cent.
+                        If not provided, we use 0 and thus include all
+                        elements.
+  --minedgeweight MINEDGEWEIGHT
+                        Define a minimum edgeweight and discard less frequent
+                        coooccurrences.
+  --stopwordfile STOPWORDFILE
+                        A file with stopwords (i.e., words you want to ignore)
+  --retweet             Produces a retweet network
+  --reply               Produces a mention network
+  --allinteractions     Produces a network that does not distinguish between
+                        RT, mention, Reply
+  --cooccurrences       Procudes a GDF-file with word-cooccurrences
+```
