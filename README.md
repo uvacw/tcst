@@ -121,3 +121,7 @@ optional arguments:
                         RT, mention, Reply
   --cooccurrences       Procudes a GDF-file with word-cooccurrences
 ```
+
+### lnparse.py
+
+Very first draft of a script to parse LexisNexis output. 
