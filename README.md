@@ -125,3 +125,24 @@ optional arguments:
 ### lnparse.py
 
 Very first draft of a script to parse LexisNexis output. 
+
+
+### nutop5.py
+
+This program parses the information provided in the "Meest gelezen" (most read) section on the homepage of the Dutch news site nu.nl. It can access nu.nl directly, or process a folder with previously saved copies of the nu.nl homepage. It writes the output to a file named output.csv, containing URL, title, and position on the Top 5-ranking of the article.
+
+
+```
+usage: nutop5.py [-h] [--live] [folder]
+
+This program parses the top 5 most read articles from nu.nl. As input, it
+takes either a folder of saved nu.nl-homepages or it looks up the top 5 at
+this moment.
+
+positional arguments:
+  folder      In which folder are the saved nu.nl-homepages
+
+optional arguments:
+  -h, --help  show this help message and exit
+  --live      Look at the top 5 right now instead of analyzing saved homepages
+```
