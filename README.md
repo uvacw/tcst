@@ -146,3 +146,12 @@ optional arguments:
   -h, --help  show this help message and exit
   --live      Look at the top 5 right now instead of analyzing saved homepages
 ```
+
+### nutextparse.py
+
+This program seperates the text body of articles from nu.nl from the rest, stripping all navigation elements and the like. It saves the headline, the publication and update dates, and the text itself to text files.
+
+```
+usage: nutextparse.py /path/to/folder/with/articles
+
+```
