@@ -155,3 +155,9 @@ This program seperates the text body of articles from nu.nl from the rest, strip
 usage: nutextparse.py /path/to/folder/with/articles
 
 ```
+
+
+### rsshond
+
+RSShond checks RSS feeds (typically feeds of news sites), makes a CSV table with all relevant data, and additionally downloads the full articles. Put RSS-feeds into `sources.conf`. Use cron or a similar program to start RSShond regularly (for example, once an hour). 
+It requires the Python module "feedparser" to be installed (`pip install feedparser`).
