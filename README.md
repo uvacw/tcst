@@ -127,6 +127,12 @@ optional arguments:
 Very first draft of a script to parse LexisNexis output. 
 
 
+### lnsentiment.py
+
+Conducts a sentiment analysis of folders with lexis nexis articles
+
+
+
 ### nutop5.py
 
 This program parses the information provided in the "Meest gelezen" (most read) section on the homepage of the Dutch news site nu.nl. It can access nu.nl directly, or process a folder with previously saved copies of the nu.nl homepage. It writes the output to a file named output.csv, containing URL, title, and position on the Top 5-ranking of the article.
