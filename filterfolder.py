@@ -25,7 +25,7 @@ import re
 import sys
 import os
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join,
 import argparse
 
 print "filterfolder 0.1 Copyright (C) 2014  Damian Trilling"
