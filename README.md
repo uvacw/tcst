@@ -13,6 +13,7 @@ University of Amsterdam
 www.damiantrilling.net  
 
 
+
 ##  What do I need?
 
 [Python](www.python.org). The scripts are written in Python 2.7. Some scripts will run with older versions, but they are not compatible with Python 3. Some scripts need additional Packages like [numpy](www.numpy.org), [scipy](www.scipy.org), [NLTK](www.nltk.org) or [Pattern](www.clips.ua.ac.be/pattern).
