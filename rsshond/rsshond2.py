@@ -9,6 +9,7 @@ import os.path
 import urllib.request, urllib.error, urllib.parse
 import time
 import csv
+import codecs
 #from elasticsearch import Elasticsearch                                                                                                                                            from lxml import html
 #es = Elasticsearch()                                                                                                                                                               
 #from nltk.tokenize import wordpunct_tokenize
@@ -20,6 +21,20 @@ from urllib import request
 from time import sleep
 from random import randint
 import re
+from lxml import html
+
+#stuff for ad on-the-fly download
+class MyHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def http_error_302(self, req, fp, code, msg, headers):
+        #print ("Cookie Manip Right Here")
+        return urllib.request.HTTPRedirectHandler.http_error_302(self, req, fp, code, msg, headers)        
+    http_error_301 = http_error_303 = http_error_307 = http_error_302
+
+cookieprocessor = urllib.request.HTTPCookieProcessor()
+
+opener = urllib.request.build_opener(MyHTTPRedirectHandler, cookieprocessor)
+urllib.request.install_opener(opener)
+
 
 #not working yet
 #def polish(textstring):
@@ -41,12 +56,12 @@ import re
     #return result.strip()
 
 #Parser voor Volkskrant
-def parse_vk(doc):
+def parse_vk(doc,ids):
     try:
         tree = html.fromstring(doc)
     except:
         print("kon dit niet parsen",type(doc),len(doc))
-        print(doc)
+        #print(doc)
         return("","","", "")
     try:
         category=tree.xpath('//*[@class="action-bar__primary"]/div/a/text()')[0]
@@ -54,18 +69,26 @@ def parse_vk(doc):
         category=""
     if category=="":
         try:
-            category=tree.xpath('//*[@class="action-bar__primary"]/a/text()')[0]
+            category=tree.xpath('//*[@class="action-bar__primary"]/a/text()')[0] 
+            #print("Category: ")
+            #print(category)
         except:
-            category=""
+            category="" 
+            print("oops - geen category")
     try:
         textfirstpara=tree.xpath('//*/header/p/text()')[0].replace("\n", "").strip()  
+        #print("First para: ")
+        #print(textfirstpara)
+        #print("Type")
+        #print(type(textfirstpara))
     except:
         textfirstpara=""
     if textfirstpara=="":
         try:
             textfirstpara=tree.xpath('//*/header/p/text()')[1].replace("\n", "").strip()
         except:
-            textfirstpara=""
+            textfirstpara=" "
+            print("oops - geen first para")
     try:
         #1. path: regular textrest 
         #2. path: textrest version found in 2014 11 16
@@ -74,13 +97,19 @@ def parse_vk(doc):
         #5. path: old design regular text
         #6. path: old design second heading
         #7. path:old design text with link        
-        textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p/text()| //*[@class="article__body__container"]/h3/text()| //*[@class="article__body__container"]/p/a/text()| //*[@id="art_box2"]/p/text()//*[@id="art_box2"]/p/strong/tex()| //*[@id="art_box2"]/p/a/text()')
+        textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text()//*[@id="art_box2"]/p/strong/tex() | //*[@id="art_box2"]/p/a/text()')
+        #print("Text rest: ")
+        #print(textrest)
     except:
         print("oops - geen text?")
         textrest=""
     text = textfirstpara + "\n"+ "\n".join(textrest)
+    #print("Text: ")
+    #print(text)
     try:
-        author_door=" ".join(tree.xpath('//*/span[@class="author"]/*/text() | //*/span[@class="article__body__container"]/p/sub/strong/text()')).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()  
+        author_door=" ".join(tree.xpath('//*/span[@class="author"]/*/text() | //*/span[@class="article__body__container"]/p/sub/strong/text()')).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
+        #print("Author: ")
+        #print(author_door)
         # geeft het eerste veld: "Bewerkt \ door: Redactie"  
         if author_door=="edactie":
             author_door = "redactie"
@@ -88,11 +117,12 @@ def parse_vk(doc):
         author_door=""
     if author_door=="":
         try:
-            author_door = tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
+            author_door=tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
             if author_door=="edactie":
                 author_door = "redactie"
         except:
             author_door=""
+            print("oops - geen auhtor?")
     try:
         author_bron=" ".join(tree.xpath('//*/span[@class="article__meta"][*]/text()')).strip().lstrip("Bron:").strip()
         # geeft het tweede veld: "Bron: ANP"                          
@@ -105,38 +135,51 @@ def parse_vk(doc):
             author_bron=""
     if author_bron=="":
         try:
-            bron_text = tree.xpath('//*[@class="time_post"]/text()')[1].replace("\n", "")
-            author_bron = re.findall(".*?bron:(.*)", bron_text)[0]
+            bron_text=tree.xpath('//*[@class="time_post"]/text()')[1].replace("\n", "")
+            author_bron=re.findall(".*?bron:(.*)", bron_text)[0]
         except:
             author_bron=""
         if author_bron=="":
             try:
-                bron_text = tree.xpath('//*[@class="time_post"]/text()')[0].replace("\n", "")
-                author_bron = re.findall(".*?bron:(.*)", bron_text)[0]
+                bron_text=tree.xpath('//*[@class="time_post"]/text()')[0].replace("\n", "")
+                author_bron=re.findall(".*?bron:(.*)", bron_text)[0]
             except:
-                author_bron==""
+                author_bron=""
+                print("oops - geen bron")
     if author_door=="" and author_bron=="" and category=="Opinie":
         author_door = "OPINION PIECE OTHER AUTHOR"
-    # text=polish(text)
-    x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()
-    arttext=[]
-    artcategory=[]
-    artauthor_broon=[]
-    artauthor_door=[]
-    #Tuple defined as x is transformed into a list of elements
-    #Fill the empty lists
-    list(x)
-    for element in x:
-        arttext.append(element[0])
-        artcategory.append(element[1])
-        artauthor_door.appned(element[2])
-        artauthor_bron.append(element[3])
-    elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
-    csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
-    with open(csvname, mode="w",encoding="utf8") as fo:
-        writer=csv.writer(fo)
-        writer.writerows(elements)
-
+    print("Category: ")
+    print(category)
+    print("Text: ")
+    print(text)
+    print("Auhtor: ")
+    print(author_door)
+    print("Bron: ")
+    print(author_bron)
+    #text=polish(text)
+#    arttext=[]
+ #   artcategory=[]
+  #  artauthor_bron=[]
+   # artauthor_door=[]
+    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
+    try:
+        arttext=[]
+        artcategory=[]
+        artauthor_bron=[]
+        artauthor_door=[]
+        csvname="artikelen/volkskrant/parsed/"+str(len(ids))+".csv"
+        print(csvname)
+        arttext.append(text)
+        artcategory.append(category)
+        artauthor_door.append(author_door)
+        artauthor_bron.append(author_bron)
+        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
+        with open(csvname, mode="w",encoding="utf-8") as fit:
+            writer=csv.writer(fit)
+            writer.writerows(elements)
+    except:
+        print("File not saved")
+    return
 
 #Parser voor Nu 
 def parse_nu(doc):
@@ -186,21 +229,21 @@ def parse_nu(doc):
         print("OOps - geen author?")
     #text=polish(text)
     author_bron = ""
-    x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()
+    #x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()
     arttext=[]
     artcategory=[]
     artauthor_broon=[]
     artauthor_door=[]
     #Tuple defined as x is transformed into a list of elements
     #Fill the empty lists
-    list(x)
-    for element in x:
-        arttext.append(element[0])
-        artcategory.append(element[1])
-        artauthor_door.appned(element[2])
-        artauthor_bron.append(element[3])
+    #list(x)
+    #for element in x:
+    arttext.append(text.strip())
+    artcategory.append(category.strip())
+    artauthor_door.appned(author_door.replace("n"," ").strip())
+    artauthor_bron.append(author_bron.replace("\n"," ").strip())
     elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
-    csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
+    csvname="artikelen/"+waarnartoestem+"/parsed"+str(ids)+".csv"
     with open(csvname, mode="w",encoding="utf8") as fo:
         writer=csv.writer(fo)
         writer.writerows(elements)
@@ -272,19 +315,19 @@ def parse_nrc(doc):
                 print(ids, ": This seems to be a subscribers-only article")   
         except:
             text=""
-    x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()
+    #x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()
     arttext=[]
     artcategory=[]
     artauthor_broon=[]
     artauthor_door=[]
     #Tuple defined as x is transformed into a list of elements
     #Fill the empty lists
-    list(x)
-    for element in x:
-        arttext.append(element[0])
-        artcategory.append(element[1])
-        artauthor_door.appned(element[2])
-        artauthor_bron.append(element[3])
+    #list(x)
+    #for element in x:
+    arttext.append(text.strip())
+    artcategory.append(category.strip())
+    artauthor_door.appned(author_door.replace("n"," ").strip())
+    artauthor_bron.append(author_bron.replace("\n"," ").strip())
     elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
     csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
     with open(csvname, mode="w",encoding="utf8") as fo:
@@ -296,8 +339,8 @@ def parse_ad(doc):
         tree = html.fromstring(doc)
     except:
         print("kon dit niet parsen",type(doc),len(doc))
-        print(doc)
-        return("","","", "")
+        #print(doc)
+        #return("","","", "")
     try:
         category = tree.xpath('//*[@id="actua_arrow"]/a/span/text()')[0]
     except:
@@ -328,20 +371,20 @@ def parse_ad(doc):
         author_bron=""    
     #text=polish(text)
     if text=="" and category=="" and author_door=="":
-        print("No article-page for?")
-    x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.strip()
+        print("No article-page?")
+    #x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.strip()
     arttext=[]
     artcategory=[]
     artauthor_broon=[]
     artauthor_door=[]
     #Tuple defined as x is transformed into a list of elements
     #Fill the empty lists
-    list(x)
-    for element in x:
-        arttext.append(element[0])
-        artcategory.append(element[1])
-        artauthor_door.appned(element[2])
-        artauthor_bron.append(element[3])
+    #list(x)
+    #for element in x:
+    arttext.append(text.strip())
+    artcategory.append(category.strip())
+    artauthor_door.appned(author_door.replace("n"," ").strip())
+    artauthor_bron.append(author_bron.replace("\n"," ").strip())
     elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
     csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
     with open(csvname, mode="w",encoding="utf8") as fo:
@@ -394,19 +437,19 @@ def parse_telegraaf(doc):
         author_door = ""
     author_bron=""
     text=polish(text)
-    x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()
+    #x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()
     arttext=[]
     artcategory=[]
     artauthor_broon=[]
     artauthor_door=[]
     #Tuple defined as x is transformed into a list of elements
     #Fill the empty lists
-    list(x)
-    for element in x:
-        arttext.append(element[0])
-        artcategory.append(element[1])
-        artauthor_door.appned(element[2])
-        artauthor_bron.append(element[3])
+    #list(x)
+    #for element in x:
+    arttext.append(text.strip())
+    artcategory.append(category.strip())
+    artauthor_door.appned(author_door.replace("n"," ").strip())
+    artauthor_bron.append(author_bron.replace("\n"," ").strip())     
     elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
     csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
     with open(csvname, mode="w",encoding="utf8") as fo:
@@ -483,19 +526,19 @@ def parse_spits(doc):
             author_door = ""        
     author_bron=""
     text=polish(text)
-    return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()   
+    #return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()   
     arttext=[]
     artcategory=[]
     artauthor_broon=[]
     artauthor_door=[]
     #Tuple defined as x is transformed into a list of elements
     #Fill the empty lists
-    list(x)
-    for element in x:
-        arttext.append(element[0])
-        artcategory.append(element[1])
-        artauthor_door.appned(element[2])
-        artauthor_bron.append(element[3])
+    #list(x)
+    #for element in x:
+    arttext.append(text.strip())
+    artcategory.append(category.strip())
+    artauthor_door.appned(author_door.replace("n"," ").strip())
+    artauthor_bron.append(author_bron.replace("\n"," ").strip())     
     elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
     csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
     with open(csvname, mode="w",encoding="utf8") as fo:
@@ -504,7 +547,7 @@ def parse_spits(doc):
 
 def parse_metronieuws(doc):
     try:
-        tree = html.fromstring(doc)
+        tree = html.fromstring(doc.decode(encoding="utf-8",errors="ignore"))
     except:
         print("kon dit niet parsen",type(doc),len(doc))
         #print(doc)   
@@ -550,19 +593,19 @@ def parse_metronieuws(doc):
             author_door = ""        
     author_bron=""
     #text=polish(text)
-    x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()
+    #x=return (text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip())
     arttext=[]
     artcategory=[]
     artauthor_broon=[]
     artauthor_door=[]
     #Tuple defined as x is transformed into a list of elements
     #Fill the empty lists
-    list(x)
-    for element in x:
-        arttext.append(element[0])
-        artcategory.append(element[1])
-        artauthor_door.appned(element[2])
-        artauthor_bron.append(element[3])
+    #list(x)
+    #for element in x:
+    arttext.append(text.strip())
+    artcategory.append(category.strip())
+    artauthor_door.appned(author_door.replace("n"," ").strip())
+    artauthor_bron.append(author_bron.replace("\n"," ").strip())     
     elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
     csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
     with open(csvname, mode="w",encoding="utf8") as fo:
@@ -571,26 +614,34 @@ def parse_metronieuws(doc):
  
 
  # function that calls the right parser
-def parse (medium, doc):
-    try:
-        if medium=="nu" or medium=="nunieuw":
-            parse_nu(doc)
-        elif medium=="ad":
-            parse_ad(doc)
-        elif medium=="volkskrant":
-            parse_vk(doc)
-        elif medium=="nrc":
-            parse_nrc(doc)
-        elif medium=="telegraaf":
-            parse_telegraaf(doc)
-        elif medium=="spits":
-            parse_spits(doc)
-        elif medium=="metronieuws":
-            parse_metronieuws(doc)
-        else:
-            print("Er bestaat nog geen parser voor"+waarnaartoestem)
-    except:
-        print("Parser kan niet kiesen.")
+def parse (medium, doc, ids):
+    #try:
+    if medium=="nu" or medium=="nunieuw":
+        print("I just chose the nu parser")
+        parse_nu(doc,ids)
+    elif medium=="ad":
+        print("I just chose ad parser.")
+        parse_ad(doc,ids)
+    elif medium=="volkskrant":
+        print("I just chose the VK-parser")
+        parse_vk(doc,ids)
+    elif medium=="nrc":
+        print("I just chose nrc parser")
+        parse_nrc(doc,ids)
+    elif medium=="telegraaf":
+        print("I just chose Tele parser")
+        parse_telegraaf(doc,ids)
+    elif medium=="spits":
+        print("I just chose Spits parser")
+        parse_spits(doc.ids)
+    elif medium=="metronieuws":
+        print("I just chose Metro parser")
+        parse_metronieuws(doc,ids)
+    else:
+        print("Er bestaat nog geen parser voor"+waarnaartoestem)
+    return
+#except:
+    #    print("Parser kan niet kiesen.")
 
 #Function that checks feeds defined here
 def checkfeeds(waarvandaan, waarnaartoe):
@@ -641,27 +692,34 @@ def checkfeeds(waarvandaan, waarnaartoe):
             filename="artikelen/"+waarnaartoestem+"/"+waarnaartoestem+"{0:06d}".format(len(artikel_id))+".html" 
             try:
                 # req = urllib2.Request(re.sub("/$","",post.link), headers={'User-Agent' : "Mozilla/5.0"})
-                req = urllib.request.Request(re.sub("/$","",post.link), headers={'User-Agent' : "Wget/1.9"})
+                mylink=re.sub("/$","",post.link)
+                mylink="http://www.volkskrant.nl//cookiewall/accept?url="+mylink
+                req=urllib.request.Request((mylink), headers={'User-Agent' : "Wget/1.9"})                
+#req = urllib.request.Request(re.sub("/$","",post.link), headers={'User-Agent' : "Wget/1.9"})
                 response = urllib.request.urlopen(req)
-                httpcode=response.getcode()
-                artikelopslaan=open(filename,"wb")
-                artikelopslaan.write(response.read())
+                #httpcode=response.getcode()
+                artikelopslaan=open(filename,mode="w",encoding="utf-8")
+                artikelopslaan.write(response.read().decode(encoding="utf-8",errors="ignore"))
                 artikelopslaan.close()
             except:
                 print("Het downloaden van "+re.sub("/$","",post.link)+" is niet gelukt.")
                 print("Bestandsnaam: "+filename)
                 filename="DOWNLOAD-ERROR"
             artikel_filename.append(filename)
+            with open(filename,"r",encoding="utf-8",errors="ignore") as f: 
+                fx=f.read()
+                parse(waarnaartoestem,fx,artikel_id)
+            #except:
+                #print("Something goes wrong with opening the file")
+                #parse(waarnaartoestem, f)
+            #except:
+                #print("AAaaAAAaaa")
+                #print(f)
             i=i=1
-            #start parsing the page (response.read())
-            try:
-                parse(waarnaartoestem,response.read())
-            except: 
-                print("Parser werkt niet")
-    if nieuweposts==0:
-        print("0 nieuwe artikelen gevonden op "+waarvandaan)
-    else:
-        print(str(nieuweposts)+"/"+str(len(d.entries)),"nieuwe artikelen gevonden op "+waarvandaan+". "+waarnaartoe+" is bijgewerkt en de artikelen zijn gedownload")
+        if nieuweposts==0:
+            print("0 nieuwe artikelen gevonden op "+waarvandaan)
+        else:
+            print(str(nieuweposts)+"/"+str(len(d.entries)),"nieuwe artikelen gevonden op "+waarvandaan+". "+waarnaartoe+" is bijgewerkt en de artikelen zijn gedownload")
         output=list(zip(artikel_id,artikel_datum,artikel_kop,artikel_teaser,artikel_link,artikel_filename))
         with open(waarnaartoe,mode="w",encoding="utf-8") as csvfile:
             writer=csv.writer(csvfile,delimiter=",")
