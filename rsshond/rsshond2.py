@@ -696,6 +696,7 @@ def parse (medium, doc, ids):
 
 #Function that checks feeds defined here
 def checkfeeds(waarvandaan, waarnaartoe):
+    waarnaartoestem=waarnaartoe.split(".")[0]
     d = feedparser.parse(waarvandaan)
     artikel_id=[]
     artikel_datum=[]
@@ -717,7 +718,6 @@ def checkfeeds(waarvandaan, waarnaartoe):
     else:
         print(waarnaartoe,"bestaat nog niet, wordt nu aangemaakt. Ook een map voor de artikelen wordt aangemaakt.")
         try:
-            waarnaartoestem=waarnaartoe.split(".")[0]
             os.makedirs("artikelen/"+waarnaartoestem)
             os.makedirs("artikelen/"+waarnaartoestem+"/parsed")
         except: 
@@ -740,8 +740,9 @@ def checkfeeds(waarvandaan, waarnaartoe):
             except:
                 artikel_teaser.append("teaser empty")
             artikel_link.append(re.sub("/$","",post.link))
-            filename="artikelen/"+waarnaartoestem+"/"+waarnaartoestem+"{0:06d}".format(len(artikel_id))+".html" 
-            try:
+            filename="artikelen/"+waarnaartoestem+"/{0:06d}".format(len(artikel_id))+".html" 
+            #try:
+            if 1==1:
                 if waarnaartoestem=="volkskrant":
                     mylink=re.sub("/$","",post.link)
                     mylink="http://www.volkskrant.nl//cookiewall/accept?url="+mylink
@@ -757,14 +758,15 @@ def checkfeeds(waarvandaan, waarnaartoe):
                 artikelopslaan=open(filename,mode="w",encoding="utf-8")
                 artikelopslaan.write(response.read().decode(encoding="utf-8",errors="ignore"))
                 artikelopslaan.close()
-            except:
-                print("Het downloaden van "+re.sub("/$","",post.link)+" is niet gelukt.")
-                print("Bestandsnaam: "+filename)
-                filename="DOWNLOAD-ERROR"
+                with open(filename,"r",encoding="utf-8",errors="ignore") as f: 
+                  fx=f.read()
+                  parse(waarnaartoestem,fx,artikel_id)
+
+            #except:
+            #    print("Het downloaden van "+re.sub("/$","",post.link)+" is niet gelukt.")
+            #    print("Bestandsnaam: "+filename)
+            #    filename="DOWNLOAD-ERROR"
             artikel_filename.append(filename)
-            with open(filename,"r",encoding="utf-8",errors="ignore") as f: 
-                fx=f.read()
-                parse(waarnaartoestem,fx,artikel_id)
             #except:
                 #print("Something goes wrong with opening the file")
                 #parse(waarnaartoestem, f)
@@ -793,8 +795,8 @@ if __name__ == "__main__":
     with open("sources.conf",mode="r",encoding="utf-8") as csvfile:
         reader=csv.reader(csvfile,delimiter=",")
         for row in reader:
-            try:
+            #try:
                 checkfeeds (row[1],row[0])
-            except:
-                print("\nERROR CHECKING "+row[1])
-                print("CHECK THE FILE "+row[0]+" FOR CONSISTENCY\n")
+            #except:
+            #    print("\nERROR CHECKING "+row[1])
+            #    print("CHECK THE FILE "+row[0]+" FOR CONSISTENCY\n")
