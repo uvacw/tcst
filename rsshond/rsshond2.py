@@ -9,23 +9,17 @@ import os.path
 import urllib.request, urllib.error, urllib.parse
 import time
 import csv
-#from elasticsearch import Elasticsearch                                                                                                                                            from lxml import html
-#es = Elasticsearch()                                                                                                                                                               
-#from nltk.tokenize import wordpunct_tokenize
-#import re 
 import os
 import datetime
 import urllib
 from urllib import request
 from time import sleep
 from random import randint
-import re
 from lxml import html
 
 #stuff for ad on-the-fly download
 class MyHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
     def http_error_302(self, req, fp, code, msg, headers):
-        #print ("Cookie Manip Right Here")
         return urllib.request.HTTPRedirectHandler.http_error_302(self, req, fp, code, msg, headers)        
     http_error_301 = http_error_303 = http_error_307 = http_error_302
 
@@ -34,24 +28,6 @@ cookieprocessor = urllib.request.HTTPCookieProcessor()
 opener = urllib.request.build_opener(MyHTTPRedirectHandler, cookieprocessor)
 urllib.request.install_opener(opener)
 
-
-#not working yet
-#def polish(textstring):
-    #lines = textstring.strip().split('\n')
-    #lead = lines[0].strip()
-    #rest = ' '.join( [l.strip() for l in lines[1:] if l.strip()] )
-
-    #if rest: result = lead + ' || ' + rest
-    #else: result = lead
-
-    #remove double \n 's etc
-    #lines = textstring.replace("\r","\n").split("\n")
-    #result = "\n".join([line for line in lines if line])
-   
-    #Paragraohs are anow seperated by a single \n. We'll replace it by "    ", to avoid problems with the output in both the elastic search web interface and the CSV export
-    # still think about wether that's the best way to somehow keep the info where a paragraph brake is...
-    #result=result.replace("\n","    ")
-    #return result.strip()
 
 #Parser voor Volkskrant
 def parse_vk(doc,ids):
@@ -95,7 +71,7 @@ def parse_vk(doc,ids):
         #5. path: old design regular text
         #6. path: old design second heading
         #7. path:old design text with link        
-        textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p[*]/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/tex() | //*[@id="art_box2"]/p/a/text() | //*/p[@class="article__body__paragraph first"]/text()')
+        textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p[*]/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/text() | //*[@id="art_box2"]/p/a/text() | //*/p[@class="article__body__paragraph first"]/text()')
         #print("Text rest: ")
         #print(textrest)
     except:
@@ -154,12 +130,6 @@ def parse_vk(doc,ids):
     print(author_door)
     print("Bron: ")
     print(author_bron)
-    #text=polish(text)
-#    arttext=[]
- #   artcategory=[]
-  #  artauthor_bron=[]
-   # artauthor_door=[]
-    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
     try:
         arttext=[]
         artcategory=[]
@@ -224,7 +194,6 @@ def parse_nu(doc,ids):
     except:
         author_door="" 
         print("OOps - geen author?")
-    #text=polish(text)
     author_bron = ""
     print("Category: ")
     print(category)
@@ -234,12 +203,6 @@ def parse_nu(doc,ids):
     print(author_door)
     print("Bron: ")
     print(author_bron)
-    #text=polish(text)
-#    arttext=[]
- #   artcategory=[]
-  #  artauthor_bron=[]
-   # artauthor_door=[]
-    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
     try:
         arttext=[]
         artcategory=[]
@@ -317,7 +280,7 @@ def parse_nrc(doc,ids):
         #21. live feed subheading "new news"
         #22. live feed text "new news"
         #23. live feed textlink "new news"
-        #24. live feed names "new news"
+       #24. live feed names "new news"
         #24. path type 1 layout: subheading in regular text found 2015 11 16
         #25. path type 1 layout: text in link found on 2015 11 16
         #26. path regular layout: bold subtitle found 2015 11 16
@@ -490,7 +453,7 @@ def parse_telegraaf(doc,ids):
         | //*[@id="artikelKolom"]/h2/strong/text() \
         | //*[@id="artikelKolom"]/p/strong/text() \
         | //*[@id="artikelKolom"]/p/em/text() \
-        | //*[@id="artikelKolom"]/h2/text()')
+        | //*[@id="artikelKolom"]/h2[not (@class="destination trlist")]/text()')
     except:
         print("oops - geen texttest?")
         textrest = ""
@@ -509,12 +472,6 @@ def parse_telegraaf(doc,ids):
     print(author_door)
     print("Bron: ")
     print(author_bron)
-    #text=polish(text)
-#    arttext=[]
- #   artcategory=[]
-  #  artauthor_bron=[]
-   # artauthor_door=[]
-    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
     try:
         arttext=[]
         artcategory=[]
@@ -611,12 +568,6 @@ def parse_spits(doc,ids):
     print(author_door)
     print("Bron: ")
     print(author_bron)
-    #text=polish(text)
-#    arttext=[]
- #   artcategory=[]
-  #  artauthor_bron=[]
-   # artauthor_door=[]
-    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
     try:
         arttext=[]
         artcategory=[]
@@ -693,12 +644,6 @@ def parse_metronieuws(doc,ids):
     print(author_door)
     print("Bron: ")
     print(author_bron)
-    #text=polish(text)
-#    arttext=[]
- #   artcategory=[]
-  #  artauthor_bron=[]
-   # artauthor_door=[]
-    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
     try:
         arttext=[]
         artcategory=[]
