@@ -9,7 +9,6 @@ import os.path
 import urllib.request, urllib.error, urllib.parse
 import time
 import csv
-import codecs
 #from elasticsearch import Elasticsearch                                                                                                                                            from lxml import html
 #es = Elasticsearch()                                                                                                                                                               
 #from nltk.tokenize import wordpunct_tokenize
@@ -45,14 +44,13 @@ urllib.request.install_opener(opener)
     #if rest: result = lead + ' || ' + rest
     #else: result = lead
 
-    # remove double \n 's etc
+    #remove double \n 's etc
     #lines = textstring.replace("\r","\n").split("\n")
     #result = "\n".join([line for line in lines if line])
    
-    # Paragraohs are anow seperated by a single \n. We'll replace it by "    ", to avoid problems with the output in both the elastic search web interface and the CSV export
+    #Paragraohs are anow seperated by a single \n. We'll replace it by "    ", to avoid problems with the output in both the elastic search web interface and the CSV export
     # still think about wether that's the best way to somehow keep the info where a paragraph brake is...
     #result=result.replace("\n","    ")
-
     #return result.strip()
 
 #Parser voor Volkskrant
@@ -97,7 +95,7 @@ def parse_vk(doc,ids):
         #5. path: old design regular text
         #6. path: old design second heading
         #7. path:old design text with link        
-        textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text()//*[@id="art_box2"]/p/strong/tex() | //*[@id="art_box2"]/p/a/text()')
+        textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p[*]/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/tex() | //*[@id="art_box2"]/p/a/text() | //*/p[@class="article__body__paragraph first"]/text()')
         #print("Text rest: ")
         #print(textrest)
     except:
@@ -179,10 +177,9 @@ def parse_vk(doc,ids):
             writer.writerows(elements)
     except:
         print("File not saved")
-    return
 
 #Parser voor Nu 
-def parse_nu(doc):
+def parse_nu(doc,ids):
     tree = html.fromstring(doc)
     try:
         #category = tree.xpath('//*[@class="block-wrapper section-nu"]/div/ul/li[2]/a/text()')[0]
@@ -207,8 +204,8 @@ def parse_nu(doc):
         #6.path: second version for link+italic (displayed underlined) text found in: nunieuw jan 2015 4100
         #7.path: link (displayed underlined, not italic) text found in: nunieuw dec 2014 5
         #8.path: bold text found in: nunieuw nov 2014 12
-        textrest=tree.xpath('//*[@data-type="article.body"]/div/div/p/text() | //*[@data-type="article.body"]/div/div/p/span/text()| //*[@data-type="article.body"]/div/div/p/em/text() | //*[@data-type="article.body"]/div/div/h2/text() | //*[@data-type="article.body"]/div/div/p/a/em/text() | //*[@data-type="article.body"]/div/div/p/em/a/text() | //*[@data-type="article.body"]/div/div/p/a/text() | //*[@data-type="article.body"]/div/div/p/strong/text()')   
-        if textrest ==[]:
+        textrest=tree.xpath('//*[@data-type="article.body"]/div/div/p/text() | //*[@data-type="article.body"]/div/div/p/span/text()| //*[@data-type="article.body"]/div/div/p/em/text() | //*[@data-type="article.body"]/div/div/h2/text() | //*[@data-type="article.body"]/div/div/h3/text() | //*[@data-type="article.body"]/div/div/p/a/em/text() | //*[@data-type="article.body"]/div/div/p/em/a/text() | //*[@data-type="article.body"]/div/div/p/a/text() | //*[@data-type="article.body"]/div/div/p/strong/text()')   
+        if textrest == "":
             print("OOps - empty textrest for?")
     except:
         print("OOps - geen text?")
@@ -229,28 +226,41 @@ def parse_nu(doc):
         print("OOps - geen author?")
     #text=polish(text)
     author_bron = ""
-    #x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()
-    arttext=[]
-    artcategory=[]
-    artauthor_broon=[]
-    artauthor_door=[]
-    #Tuple defined as x is transformed into a list of elements
-    #Fill the empty lists
-    #list(x)
-    #for element in x:
-    arttext.append(text.strip())
-    artcategory.append(category.strip())
-    artauthor_door.appned(author_door.replace("n"," ").strip())
-    artauthor_bron.append(author_bron.replace("\n"," ").strip())
-    elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
-    csvname="artikelen/"+waarnartoestem+"/parsed"+str(ids)+".csv"
-    with open(csvname, mode="w",encoding="utf8") as fo:
-        writer=csv.writer(fo)
-        writer.writerows(elements)
+    print("Category: ")
+    print(category)
+    print("Text: ")
+    print(text)
+    print("Auhtor: ")
+    print(author_door)
+    print("Bron: ")
+    print(author_bron)
+    #text=polish(text)
+#    arttext=[]
+ #   artcategory=[]
+  #  artauthor_bron=[]
+   # artauthor_door=[]
+    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
+    try:
+        arttext=[]
+        artcategory=[]
+        artauthor_bron=[]
+        artauthor_door=[]
+        csvname="artikelen/nu/parsed/"+str(len(ids))+".csv"
+        print(csvname)
+        arttext.append(text.strip())
+        artcategory.append(category.strip())
+        artauthor_door.append(author_door.strip())
+        artauthor_bron.append(author_bron.strip())
+        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
+        with open(csvname, mode="w",encoding="utf-8") as fit:
+            writer=csv.writer(fit)
+            writer.writerows(elements)
+    except:
+        print("File not saved")
 
 
 #Parser for Nrc
-def parse_nrc(doc):
+def parse_nrc(doc,ids):
     try:
         tree = html.fromstring(doc)
     except:
@@ -261,6 +271,11 @@ def parse_nrc(doc):
         category = tree.xpath('//*[@id="broodtekst"]/a[1]/text()')[0]
     except:
         category = ""
+    if category=="":
+        try:
+            category=tree.xpath('//*[@class="article__section-branding"]/text()')[0]
+        except:
+            category=""
         #print("OOps - geen category for", ids, "?")
     try:
         #1. path: type 1 layout: regular text
@@ -270,10 +285,12 @@ def parse_nrc(doc):
         #5. path: type 2 layout: normal text first paragraph
         #6. path: type 2 layout: text with link behind
         #7. path: type 1 layout: italic text, found in 2014 11 988
-        textfirstpara=tree.xpath('//*[@class="eerste"]/text() | //*[@class="eerste"]/a/text() | //*[@class="eerste"]/strong/text() | //*[@class="eerste"]/strong/em/text() | //*[@id="article-content"]/p[1]/text() | //*[@id="article-content"]/p[1]/a/text() | //*[@class="eerste"]/em/text()')
+        #8. path for in beeld found 2015 11 13
+        textfirstpara=tree.xpath('//*[@class="eerste"]/text() | //*[@class="eerste"]/a/text() | //*[@class="eerste"]/strong/text() | //*[@class="eerste"]/strong/em/text() | //*[@id="article-content"]/p[1]/text() | //*[@id="article-content"]/p[1]/a/text() | //*[@class="eerste"]/em/text() | //*[@class="intro"]/text() | //*[@class="intro"]/p/text() | //*[@class="intro"]/p/span/text()')
         textfirstpara = " ".join(textfirstpara)
     except:
         textfirstpara=""
+        print("Ooops geen first para")
     try:
         #1. path: type 1 layout: regular text
         #2. path: type 1 layout: second heading in regular text
@@ -291,11 +308,25 @@ def parse_nrc(doc):
         #14. path: type 3 layout: text with link behind found in 2014 11 63
         #15. path: type 3 layout: italic text with link behind, found in 2014 11 63
         #16. path: type 1 layout: italix text, found in 2014 04 500
-        textrest=tree.xpath('//*[@id="broodtekst"]/p[position()>1]/text() | //*[@id="broodtekst"]/h2/text() | //*[@id="article-content"]/p[position()>1]/text() | //*[@id="article-content"]/p[position()>1]/strong/text() | //*[@id="article-content"]/p[position()>1]/a/text() | //*[@id="article-content"]/p[position()>1]/em/text() | //*[@id="article-content"]/h2/text() | //*[@id="article-content"]/blockquote/p/text() | //*[@id="broodtekst"]/p[position()>1]/a/text() | //*[@id="broodtekst"]/blockquote/p/text() | //*[@id="broodtekst"]/p[position()>1]/strong/text() | //*[@id="broodtekst"]/p[position()>1]/a/em/text() | //*[@class="beschrijving"]/text() | //*[@class="beschrijving"]/a/text() | //*[@class="beschrijving"]/a/em/text() | //*[@id="broodtekst"]/p[position()>1]/em/text()')
+        #17. path: type 1 layout: found 2015 11 13
+        #17. path: type 1 layout: heading in regular text found 2015 11 13
+        #18. live feed subheading "old news"
+        #19. live feed text "old news"
+        #20. live feed textlink "oldnews"
+        #21. live feed list "old news"
+        #21. live feed subheading "new news"
+        #22. live feed text "new news"
+        #23. live feed textlink "new news"
+        #24. live feed names "new news"
+        #24. path type 1 layout: subheading in regular text found 2015 11 16
+        #25. path type 1 layout: text in link found on 2015 11 16
+        #26. path regular layout: bold subtitle found 2015 11 16
+        textrest=tree.xpath('//*[@id="broodtekst"]/p[position()>1]/text() | //*[@id="broodtekst"]/h2/text() | //*[@id="article-content"]/p[position()>1]/text() | //*[@id="article-content"]/p[position()>1]/strong/text() | //*[@id="article-content"]/p[position()>1]/a/text() | //*[@id="article-content"]/p[position()>1]/em/text() | //*[@id="article-content"]/h2/text() | //*[@id="article-content"]/blockquote/p/text() | //*[@id="broodtekst"]/p[position()>1]/a/text() | //*[@id="broodtekst"]/blockquote/p/text() | //*[@id="broodtekst"]/p[position()>1]/strong/text() | //*[@id="broodtekst"]/p[position()>1]/a/em/text() | //*[@class="beschrijving"]/text() | //*[@class="beschrijving"]/a/text() | //*[@class="beschrijving"]/a/em/text() | //*[@id="broodtekst"]/p[position()>1]/em/text() | //*[@class="content article__content"]/p[position()>0]/text() | //*[@class="content article__content"]/p/strong/text() | //*[@class="content article__content"]/p/a/text() | //*[@class="content article__content"]/blockquote/p/text() | //*[@class="bericht"]/h2/text() | //*[@class="bericht"]/p/text() | //*[@class="bericht"]/p/a/text() |//*[@class="bericht"]/ul/li/text() | //*[@class="bericht bericht--new"]/h2/text() | //*[@class="bericht bericht--new"]/p/text() | //*[@class="bericht bericht--new"]/p/a/text() | //*[@class="bericht bericht--new"]/p/em/text() | //*[@class="content article__content"]/h2/text() | //*[@class="content article__content"]/h3/text() | //*[@class="content article__content"]/p/a/em/text() | //*[@class="content article__content"]/blockquote/p/strong/text() | //*[@class="content article__content"]/p/br/a/strong/text()')
     except:
-        #print("oops - geen text?")
+        print("oops - geen text?")
         textrest = ""
     text = textfirstpara + "\n"+ "\n".join(textrest)
+    textnew=re.sub("Follow @nrc_opinie","",text)
     try:
         author_door = tree.xpath('//*[@class="author"]/span/a/text()')[0]
     except:
@@ -305,36 +336,55 @@ def parse_nrc(doc):
             author_door = tree.xpath('//*[@class="auteur"]/span/a/text()')[0]
         except:
             author_door = ""
+    if author_door == "":
+        try:
+            author_door = tree.xpath('//*[@class="authors"]/ul/li/text()')[0]
+        except:
+            author_door = ""
+    if author_door=="":
+        try: 
+            author_door=tree.xpath('//*[@class="article__byline__author-and-date"]/a/text()')[0]
+        except:
+            author_door = ""
     author_bron=""
     #text=polish(text)
-    if text=="" and category=="" and author_door=="":
-        print("No article-page for?")
+    if textnew=="" and category=="" and author_door=="":
+        print("No article-page?")
         try:
             if tree.xpath('//*[@class="kies show clearfix"]/h2/text()')[0] == 'Lees dit hele artikel':
                 text="THIS SEEMS TO BE AN ARTICLE ONLY FOR SUBSCRIBERS"
-                print(ids, ": This seems to be a subscribers-only article")   
+                print(" This seems to be a subscribers-only article")   
         except:
             text=""
-    #x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()
-    arttext=[]
-    artcategory=[]
-    artauthor_broon=[]
-    artauthor_door=[]
-    #Tuple defined as x is transformed into a list of elements
-    #Fill the empty lists
-    #list(x)
-    #for element in x:
-    arttext.append(text.strip())
-    artcategory.append(category.strip())
-    artauthor_door.appned(author_door.replace("n"," ").strip())
-    artauthor_bron.append(author_bron.replace("\n"," ").strip())
-    elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
-    csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
-    with open(csvname, mode="w",encoding="utf8") as fo:
-        writer=csv.writer(fo)
-        writer.writerows(elements)
+    print("Category: ")
+    print(category)
+    print("Text: ")
+    print(textnew)
+    print("Auhtor: ")
+    print(author_door)
+    #text=polish(text)
+#    arttext=[]
+ #   artcategory=[]
+  #  artauthor_bron=[]
+   # artauthor_door=[]
+    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
+    try:
+        arttext=[]
+        artcategory=[]
+        artauthor_door=[]
+        csvname="artikelen/nrc/parsed/"+str(len(ids))+".csv"
+        print(csvname)
+        arttext.append(textnew)
+        artcategory.append(category)
+        artauthor_door.append(author_door)
+        elements=zip(arttext,artcategory,artauthor_door)
+        with open(csvname, mode="w",encoding="utf-8") as fit:
+            writer=csv.writer(fit)
+            writer.writerows(elements)
+    except:
+        print("File not saved")
     
-def parse_ad(doc):
+def parse_ad(doc,ids):
     try:
         tree = html.fromstring(doc)
     except:
@@ -372,26 +422,39 @@ def parse_ad(doc):
     #text=polish(text)
     if text=="" and category=="" and author_door=="":
         print("No article-page?")
-    #x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.strip()
-    arttext=[]
-    artcategory=[]
-    artauthor_broon=[]
-    artauthor_door=[]
-    #Tuple defined as x is transformed into a list of elements
-    #Fill the empty lists
-    #list(x)
-    #for element in x:
-    arttext.append(text.strip())
-    artcategory.append(category.strip())
-    artauthor_door.appned(author_door.replace("n"," ").strip())
-    artauthor_bron.append(author_bron.replace("\n"," ").strip())
-    elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
-    csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
-    with open(csvname, mode="w",encoding="utf8") as fo:
-        writer=csv.writer(fo)
-        writer.writerows(elements)
+    print("Category: ")
+    print(category)
+    print("Text: ")
+    print(text)
+    print("Auhtor: ")
+    print(author_door)
+    print("Bron: ")
+    print(author_bron)
+    #text=polish(text)
+#    arttext=[]
+ #   artcategory=[]
+  #  artauthor_bron=[]
+   # artauthor_door=[]
+    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
+    try:
+        arttext=[]
+        artcategory=[]
+        artauthor_bron=[]
+        artauthor_door=[]
+        csvname="artikelen/ad/parsed/"+str(len(ids))+".csv"
+        print(csvname)
+        arttext.append(text)
+        artcategory.append(category)
+        artauthor_door.append(author_door)
+        artauthor_bron.append(author_bron)
+        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
+        with open(csvname, mode="w",encoding="utf-8") as fit:
+            writer=csv.writer(fit)
+            writer.writerows(elements)
+    except:
+        print("File not saved")
 
-def parse_telegraaf(doc):
+def parse_telegraaf(doc,ids):
     try:
         tree = html.fromstring(doc)
     except:
@@ -407,13 +470,14 @@ def parse_telegraaf(doc):
         #1.path: layout 1: regular first para
         #2.path: layout 2 (video): regular first (and mostly only) para
         #3.path: layout 1: second version of first para, fi 2014 11 6
+        #4.path layout 1: place found on 2015 11 16
         textfirstpara=tree.xpath('//*[@class="zak_normal"]/p/text() \
         | //*[@class="bodyText streamone"]/div/p/text() \
-        | //*[@class="zak_normal"]/text()')
+        | //*[@class="zak_normal"]/text() | //*[@class="zak_normal"]/span/text()')
         textfirstpara = " ".join(textfirstpara)
     except:
         textfirstpara=""
-        print("OOps - geen textfirstpara for", ids, "?")
+        print("OOps - geen textfirstpara?")
     try:
         #1. path: layout 1: regular text, fi 2014 12 006
         #2. path: layout 1: text with link, fi 2014 12 006
@@ -432,31 +496,44 @@ def parse_telegraaf(doc):
         textrest = ""
     text = textfirstpara + "\n"+ "\n".join(textrest)
     try:
-        author_door = tree.xpath('//*[@class="auteur"]/text()')[0].strip().lstrip("Van ").lstrip("onze").lstrip("door ").strip()
+        author_door = tree.xpath('//*[@class="auteur"]/text()')[0].strip().lstrip("Van ").lstrip("onze").lstrip("door").strip()
     except:
         author_door = ""
     author_bron=""
-    text=polish(text)
-    #x=return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()
-    arttext=[]
-    artcategory=[]
-    artauthor_broon=[]
-    artauthor_door=[]
-    #Tuple defined as x is transformed into a list of elements
-    #Fill the empty lists
-    #list(x)
-    #for element in x:
-    arttext.append(text.strip())
-    artcategory.append(category.strip())
-    artauthor_door.appned(author_door.replace("n"," ").strip())
-    artauthor_bron.append(author_bron.replace("\n"," ").strip())     
-    elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
-    csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
-    with open(csvname, mode="w",encoding="utf8") as fo:
-        writer=csv.writer(fo)
-        writer.writerows(elements)
+    #text=polish(text)
+    print("Category: ")
+    print(category)
+    print("Text: ")
+    print(text)
+    print("Auhtor: ")
+    print(author_door)
+    print("Bron: ")
+    print(author_bron)
+    #text=polish(text)
+#    arttext=[]
+ #   artcategory=[]
+  #  artauthor_bron=[]
+   # artauthor_door=[]
+    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
+    try:
+        arttext=[]
+        artcategory=[]
+        artauthor_bron=[]
+        artauthor_door=[]
+        csvname="artikelen/telegraaf/parsed/"+str(len(ids))+".csv"
+        print(csvname)
+        arttext.append(text)
+        artcategory.append(category)
+        artauthor_door.append(author_door)
+        artauthor_bron.append(author_bron)
+        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
+        with open(csvname, mode="w",encoding="utf-8") as fit:
+            writer=csv.writer(fit)
+            writer.writerows(elements)
+    except:
+        print("File not saved")
 
-def parse_spits(doc):
+def parse_spits(doc,ids):
     try:
         tree = html.fromstring(doc)
     except:
@@ -467,7 +544,7 @@ def parse_spits(doc):
         category = tree.xpath('//*[@class="active"]/text()')[0]
     except:
         category = ""
-        #print("OOps - geen category for", ids, "?")
+        print("OOps - geen category?")
     #fix: xpath for category in new layout leads to a sentence in old layout:
     if len(category.split(" ")) >1:
         category=""            
@@ -507,7 +584,7 @@ def parse_spits(doc):
         #32. path: another regular text, fi 2014 03 667
         #33. path: 2nd heading, matches 32. patch, fi 2014 03 667
         #33. path: text with link, matches 32. patch, fi 2014 03 667
-        textrest=tree.xpath('//*[@class="field-item even"]/p/text() | //*[@class="field-item even"]/p/a/text() | //*[@class="field-item even"]/p/em/text() | //*[@class="field-item even"]/h2/text() | //*[@class="field-item even"]/p/span/text() | //*[@class="field-item even"]/h2/span/text() | //*[@class="field-item even"]/p/span/em/a/text() | //*[@class="field-item even"]/p/em/a/text() | //*[@class="article"]/p/text() | //*[@class="article"]/p/a/text() | //*[@class="article"]/p/em/text() | //*[@class="article"]/p/strong/text() | //*[@class="article"]/div/text() | //*[@class="article"]/div/strong/text() | //*[@class="article"]/div/em/text() | //*[@class="article"]/div/div/p/text() | //*[@class="article"]/div/p/text() | //*[@class="article"]/p/em/a/text() | //*[@class="article"]/p/span/text() | //*[@class="article"]/p/span/a/text() | //*[@class="article"]/p/span/em/text() | //*[@class="article"]/p/a/em/text() | //*[@class="article"]/div/div/div/p/text() | //*[@class="article"]/div/div/text() | //*[@class="article"]/div/div/a/text() | //*[@class="article"]/div/div/strong/text() | //*[@id="artikelKolom"]/div/div/p/text() | //*[@id="artikelKolom"]/div/div/p/em/text() | //*[@class="article"]/p/font/text() | //*[@class="article"]/p/font/a/text() | //*[@class="article"]/div/div/div/text() | //*[@class="article"]/div/div/div/strong/text() | //*[@class="article"]/div/div/div/a/text()')
+        textrest=tree.xpath('//*[@class="field-item even"]/p/text() | //*[@class="field-item even"]/p/a/text() | //*[@class="field-item even"]/p/em/text() | //*[@class="field-item even"]/h2/text() | //*[@class="field-item even"]/p/span/text() | //*[@class="field-item even"]/h2/span/text() | //*[@class="article"]/div/p/text() | //*[@class="field-item even"]/p/span/em/a/text() | //*[@class="field-item even"]/p/em/a/text() | //*[@class="article"]/p/a/text() | //*[@class="article"]/p/em/text() | //*[@class="article"]/p/strong/text() | //*[@class="article"]/div/text() | //*[@class="article"]/div/strong/text() | //*[@class="article"]/div/em/text() | //*[@class="article"]/div/div/p/text() | //*[@class="article"]/div/p/text() | //*[@class="article"]/p/em/a/text() | //*[@class="article"]/p/span/text() | //*[@class="article"]/p/span/a/text() | //*[@class="article"]/p/span/em/text() | //*[@class="article"]/p/a/em/text() | //*[@class="article"]/div/div/div/p/text() | //*[@class="article"]/div/div/text() | //*[@class="article"]/div/div/a/text() | //*[@class="article"]/div/div/strong/text() |//*[@id="artikelKolom"]/div/div/p/text() | //*[@id="artikelKolom"]/div/div/p/em/text() | //*[@class="article"]/p/font/text() | //*[@class="article"]/p/font/a/text() | //*[@class="article"]/div/div/div/text() | //*[@class="article"]/div/div/div/strong/text() | //*[@class="article"]/div/div/div/a/text()')
     except:
         print("oops - geen texttest?")
         textrest = ""
@@ -521,33 +598,46 @@ def parse_spits(doc):
     if author_door=="": 
         #try old layout author
         try:
-                author_door = tree.xpath('//*[@class="article-options"]/text()')[0].split("|")[0].replace("\n", "").replace("\t","").strip()
+            author_door = tree.xpath('//*[@class="article-options"]/text()')[0].split("|")[0].replace("\n", "").replace("\t","").strip()
         except:
             author_door = ""        
     author_bron=""
-    text=polish(text)
-    #return text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip()   
-    arttext=[]
-    artcategory=[]
-    artauthor_broon=[]
-    artauthor_door=[]
-    #Tuple defined as x is transformed into a list of elements
-    #Fill the empty lists
-    #list(x)
-    #for element in x:
-    arttext.append(text.strip())
-    artcategory.append(category.strip())
-    artauthor_door.appned(author_door.replace("n"," ").strip())
-    artauthor_bron.append(author_bron.replace("\n"," ").strip())     
-    elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
-    csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
-    with open(csvname, mode="w",encoding="utf8") as fo:
-        writer=csv.writer(fo)
-        writer.writerows(elements)
-
-def parse_metronieuws(doc):
+    #text=polish(text)
+    print("Category: ")
+    print(category)
+    print("Text: ")
+    print(text)
+    print("Auhtor: ")
+    print(author_door)
+    print("Bron: ")
+    print(author_bron)
+    #text=polish(text)
+#    arttext=[]
+ #   artcategory=[]
+  #  artauthor_bron=[]
+   # artauthor_door=[]
+    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
     try:
-        tree = html.fromstring(doc.decode(encoding="utf-8",errors="ignore"))
+        arttext=[]
+        artcategory=[]
+        artauthor_bron=[]
+        artauthor_door=[]
+        csvname="artikelen/spits/parsed/"+str(len(ids))+".csv"
+        print(csvname)
+        arttext.append(text)
+        artcategory.append(category)
+        artauthor_door.append(author_door)
+        artauthor_bron.append(author_bron)
+        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
+        with open(csvname, mode="w",encoding="utf-8") as fit:
+            writer=csv.writer(fit)
+            writer.writerows(elements)
+    except:
+        print("File not saved")
+
+def parse_metronieuws(doc,ids):
+    try:
+        tree = html.fromstring(doc)
     except:
         print("kon dit niet parsen",type(doc),len(doc))
         #print(doc)   
@@ -574,12 +664,14 @@ def parse_metronieuws(doc):
         #11. path: bold text, fi 2014 12 04
         #12. path: second headings
         #13. path: regular text
-        textrest=tree.xpath('//*[@class="field-item even"]/p/text() | //*[@class="field-item even"]/p/a/text() | //*[@class="field-item even"]/p/em/text() | //*[@class="field-item even"]/h2/text() | //*[@class="field-item even"]/p/span/text() | //*[@class="field-item even"]/h2/span/text() | //*[@class="field-item even"]/p/span/em/a/text() | //*[@class="field-item even"]/p/em/a/text() | //*[@class="field-item even"]/p/em/strong/text() | //*[@class="field-item even"]/p/strong/text() | //*[@class="field-item even"]/p/b/text() | //*[@class="field-item even"]/div/text()')
+        textrest=tree.xpath('//*[@class="field-item even"]/p/text() | //*[@class="field-item even"]/p/a/text() | //*[@class="field-item even"]/p/em/text() | //*[@class="field-item even"]/h2/text() | //*[@class="field-item even"]/p/span/text() | //*[@class="field-item even"]/h2/span/text() | //*[@class="field-item even"]/p/span/em/a/text() | //*[@class="field-item even"]/p/em/a/text() | //*[@class="field-item even"]/p/em/strong/text() | //*[@class="field-item even"]/p/b/text() | //*[@class="field-item even"]/div/text() | //*[@class="field-item even"]/p/strong/text()') 
     except:
         print("oops - geen textrest?")
         textrest = ""
-    #text = textfirstpara + "\n"+ "\n".join(textrest)
+        #text = textfirstpara + "\n"+ "\n".join(textrest)
+        #textnew=re.sub("Lees ook:"," ",textrest)
     text = "\n".join(textrest)
+    textnew=re.sub("Lees ook:"," ",text)
     try:
         #new layout author:
         author_door = tree.xpath('//*[@class="username"]/text()')[0].strip().lstrip("door ").lstrip("© ").lstrip("2014 ").strip()
@@ -588,29 +680,43 @@ def parse_metronieuws(doc):
     if author_door=="": 
         #try old layout author
         try:
-                author_door = tree.xpath('//*[@class="article-options"]/text()')[0].split("|")[0].replace("\n", "").replace("\t","").strip()
+            author_door = tree.xpath('//*[@class="article-options"]/text()')[0].split("|")[0].replace("\n", "").replace("\t","").strip()
         except:
             author_door = ""        
     author_bron=""
     #text=polish(text)
-    #x=return (text.strip(),category.strip(),author_door.replace("\n"," ").strip(),author_bron.replace("\n"," ").strip())
-    arttext=[]
-    artcategory=[]
-    artauthor_broon=[]
-    artauthor_door=[]
-    #Tuple defined as x is transformed into a list of elements
-    #Fill the empty lists
-    #list(x)
-    #for element in x:
-    arttext.append(text.strip())
-    artcategory.append(category.strip())
-    artauthor_door.appned(author_door.replace("n"," ").strip())
-    artauthor_bron.append(author_bron.replace("\n"," ").strip())     
-    elements=zip(arttext,artcategory,artauthor_door,artauthor_broon)
-    csvname="artikelen/"+waarnartoestem+"/parsed"+str(artikel_id)+".csv"
-    with open(csvname, mode="w",encoding="utf8") as fo:
-        writer=csv.writer(fo)
-        writer.writerows(elements)
+    print("Category: ")
+    print(category)
+    print("Text: ")
+    print(textnew)
+    print("Auhtor: ")
+    print(author_door)
+    print("Bron: ")
+    print(author_bron)
+    #text=polish(text)
+#    arttext=[]
+ #   artcategory=[]
+  #  artauthor_bron=[]
+   # artauthor_door=[]
+    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
+    try:
+        arttext=[]
+        artcategory=[]
+        artauthor_bron=[]
+        artauthor_door=[]
+        csvname="artikelen/metronieuws/parsed/"+str(len(ids))+".csv"
+        print(csvname)
+        arttext.append(textnew)
+        artcategory.append(category)
+        artauthor_door.append(author_door)
+        artauthor_bron.append(author_bron)
+        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
+        with open(csvname, mode="w",encoding="utf-8") as fit:
+            writer=csv.writer(fit)
+            writer.writerows(elements)
+    except:
+        print("File not saved")
+
  
 
  # function that calls the right parser
@@ -633,13 +739,13 @@ def parse (medium, doc, ids):
         parse_telegraaf(doc,ids)
     elif medium=="spits":
         print("I just chose Spits parser")
-        parse_spits(doc.ids)
+        parse_spits(doc,ids)
     elif medium=="metronieuws":
         print("I just chose Metro parser")
         parse_metronieuws(doc,ids)
     else:
-        print("Er bestaat nog geen parser voor"+waarnaartoestem)
-    return
+        print("Er bestaat nog geen parser voor"+medium)
+
 #except:
     #    print("Parser kan niet kiesen.")
 
@@ -691,11 +797,16 @@ def checkfeeds(waarvandaan, waarnaartoe):
             artikel_link.append(re.sub("/$","",post.link))
             filename="artikelen/"+waarnaartoestem+"/"+waarnaartoestem+"{0:06d}".format(len(artikel_id))+".html" 
             try:
-                # req = urllib2.Request(re.sub("/$","",post.link), headers={'User-Agent' : "Mozilla/5.0"})
-                mylink=re.sub("/$","",post.link)
-                mylink="http://www.volkskrant.nl//cookiewall/accept?url="+mylink
-                req=urllib.request.Request((mylink), headers={'User-Agent' : "Wget/1.9"})                
-#req = urllib.request.Request(re.sub("/$","",post.link), headers={'User-Agent' : "Wget/1.9"})
+                if waarnaartoestem=="volkskrant":
+                    mylink=re.sub("/$","",post.link)
+                    mylink="http://www.volkskrant.nl//cookiewall/accept?url="+mylink
+                    req=urllib.request.Request((mylink), headers={'User-Agent' : "Wget/1.9"})          
+                elif waarnaartoestem=="ad":
+                    mylink=re.sub("/$","",post.link)
+                    mylink="http://www.ad.nl/ad/acceptCookieCheck.do?url="+mylink
+                    req=urllib.request.Request((mylink), headers={'User-Agent' : "Wget/1.9"})
+                else: 
+                    req=urllib.request.Request(re.sub("/$","",post.link), headers={'User-Agent' : "Wget/1.9"})
                 response = urllib.request.urlopen(req)
                 #httpcode=response.getcode()
                 artikelopslaan=open(filename,mode="w",encoding="utf-8")
