@@ -130,23 +130,10 @@ def parse_vk(doc,ids):
     print(author_door)
     print("Bron: ")
     print(author_bron)
-    try:
-        arttext=[]
-        artcategory=[]
-        artauthor_bron=[]
-        artauthor_door=[]
-        csvname="artikelen/volkskrant/parsed/"+str(len(ids))+".csv"
-        print(csvname)
-        arttext.append(text)
-        artcategory.append(category)
-        artauthor_door.append(author_door)
-        artauthor_bron.append(author_bron)
-        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
-        with open(csvname, mode="w",encoding="utf-8") as fit:
-            writer=csv.writer(fit)
-            writer.writerows(elements)
-    except:
-        print("File not saved")
+
+    return(text,category,author_door,author_bron)
+
+
 
 #Parser voor Nu 
 def parse_nu(doc,ids):
@@ -203,23 +190,8 @@ def parse_nu(doc,ids):
     print(author_door)
     print("Bron: ")
     print(author_bron)
-    try:
-        arttext=[]
-        artcategory=[]
-        artauthor_bron=[]
-        artauthor_door=[]
-        csvname="artikelen/nu/parsed/"+str(len(ids))+".csv"
-        print(csvname)
-        arttext.append(text.strip())
-        artcategory.append(category.strip())
-        artauthor_door.append(author_door.strip())
-        artauthor_bron.append(author_bron.strip())
-        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
-        with open(csvname, mode="w",encoding="utf-8") as fit:
-            writer=csv.writer(fit)
-            writer.writerows(elements)
-    except:
-        print("File not saved")
+
+    return(text,category,author_door,author_bron)
 
 
 #Parser for Nrc
@@ -325,27 +297,8 @@ def parse_nrc(doc,ids):
     print(textnew)
     print("Auhtor: ")
     print(author_door)
-    #text=polish(text)
-#    arttext=[]
- #   artcategory=[]
-  #  artauthor_bron=[]
-   # artauthor_door=[]
-    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
-    try:
-        arttext=[]
-        artcategory=[]
-        artauthor_door=[]
-        csvname="artikelen/nrc/parsed/"+str(len(ids))+".csv"
-        print(csvname)
-        arttext.append(textnew)
-        artcategory.append(category)
-        artauthor_door.append(author_door)
-        elements=zip(arttext,artcategory,artauthor_door)
-        with open(csvname, mode="w",encoding="utf-8") as fit:
-            writer=csv.writer(fit)
-            writer.writerows(elements)
-    except:
-        print("File not saved")
+
+    return(text,category,author_door,author_bron)
     
 def parse_ad(doc,ids):
     try:
@@ -393,29 +346,10 @@ def parse_ad(doc,ids):
     print(author_door)
     print("Bron: ")
     print(author_bron)
-    #text=polish(text)
-#    arttext=[]
- #   artcategory=[]
-  #  artauthor_bron=[]
-   # artauthor_door=[]
-    #csvname="artikelen/volkskrant/parsed/"+artikel_id+".csv"
-    try:
-        arttext=[]
-        artcategory=[]
-        artauthor_bron=[]
-        artauthor_door=[]
-        csvname="artikelen/ad/parsed/"+str(len(ids))+".csv"
-        print(csvname)
-        arttext.append(text)
-        artcategory.append(category)
-        artauthor_door.append(author_door)
-        artauthor_bron.append(author_bron)
-        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
-        with open(csvname, mode="w",encoding="utf-8") as fit:
-            writer=csv.writer(fit)
-            writer.writerows(elements)
-    except:
-        print("File not saved")
+
+    return(text,category,author_door,author_bron)
+
+
 
 def parse_telegraaf(doc,ids):
     try:
@@ -472,23 +406,9 @@ def parse_telegraaf(doc,ids):
     print(author_door)
     print("Bron: ")
     print(author_bron)
-    try:
-        arttext=[]
-        artcategory=[]
-        artauthor_bron=[]
-        artauthor_door=[]
-        csvname="artikelen/telegraaf/parsed/"+str(len(ids))+".csv"
-        print(csvname)
-        arttext.append(text)
-        artcategory.append(category)
-        artauthor_door.append(author_door)
-        artauthor_bron.append(author_bron)
-        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
-        with open(csvname, mode="w",encoding="utf-8") as fit:
-            writer=csv.writer(fit)
-            writer.writerows(elements)
-    except:
-        print("File not saved")
+
+    return(text,category,author_door,author_bron)
+
 
 def parse_spits(doc,ids):
     try:
@@ -568,23 +488,9 @@ def parse_spits(doc,ids):
     print(author_door)
     print("Bron: ")
     print(author_bron)
-    try:
-        arttext=[]
-        artcategory=[]
-        artauthor_bron=[]
-        artauthor_door=[]
-        csvname="artikelen/spits/parsed/"+str(len(ids))+".csv"
-        print(csvname)
-        arttext.append(text)
-        artcategory.append(category)
-        artauthor_door.append(author_door)
-        artauthor_bron.append(author_bron)
-        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
-        with open(csvname, mode="w",encoding="utf-8") as fit:
-            writer=csv.writer(fit)
-            writer.writerows(elements)
-    except:
-        print("File not saved")
+
+    return(text,category,author_door,author_bron)
+
 
 def parse_metronieuws(doc,ids):
     try:
@@ -644,55 +550,49 @@ def parse_metronieuws(doc,ids):
     print(author_door)
     print("Bron: ")
     print(author_bron)
-    try:
-        arttext=[]
-        artcategory=[]
-        artauthor_bron=[]
-        artauthor_door=[]
-        csvname="artikelen/metronieuws/parsed/"+str(len(ids))+".csv"
-        print(csvname)
-        arttext.append(textnew)
-        artcategory.append(category)
-        artauthor_door.append(author_door)
-        artauthor_bron.append(author_bron)
-        elements=zip(arttext,artcategory,artauthor_door,artauthor_bron)
-        with open(csvname, mode="w",encoding="utf-8") as fit:
-            writer=csv.writer(fit)
-            writer.writerows(elements)
-    except:
-        print("File not saved")
 
+    return(text,category,author_door,author_bron)
  
 
- # function that calls the right parser
+
 def parse (medium, doc, ids):
-    #try:
+    '''
+    This is a function that calls the right parser
+    It returns nothing, but saves the parsed contents to a series of 
+    csv-files
+    '''
+
     if medium=="nu" or medium=="nunieuw":
         print("I just chose the nu parser")
-        parse_nu(doc,ids)
+        elements=parse_nu(doc,ids)
     elif medium=="ad":
         print("I just chose ad parser.")
-        parse_ad(doc,ids)
+        elements=parse_ad(doc,ids)
     elif medium=="volkskrant":
         print("I just chose the VK-parser")
-        parse_vk(doc,ids)
+        elements=parse_vk(doc,ids)
     elif medium=="nrc":
         print("I just chose nrc parser")
-        parse_nrc(doc,ids)
+        elements=parse_nrc(doc,ids)
     elif medium=="telegraaf":
         print("I just chose Tele parser")
-        parse_telegraaf(doc,ids)
+        elements=parse_telegraaf(doc,ids)
     elif medium=="spits":
         print("I just chose Spits parser")
-        parse_spits(doc,ids)
+        elements=parse_spits(doc,ids)
     elif medium=="metronieuws":
         print("I just chose Metro parser")
-        parse_metronieuws(doc,ids)
+        elements=parse_metronieuws(doc,ids)
     else:
         print("Er bestaat nog geen parser voor"+medium)
+        return
 
-#except:
-    #    print("Parser kan niet kiesen.")
+    csvname="artikelen/"+medium+"/parsed/{0:06d}".format(len(ids))+".csv"   
+    with open(csvname, mode="w",encoding="utf-8") as fit:
+          writer=csv.writer(fit)
+          writer.writerows(elements)
+
+
 
 #Function that checks feeds defined here
 def checkfeeds(waarvandaan, waarnaartoe):
@@ -721,7 +621,7 @@ def checkfeeds(waarvandaan, waarnaartoe):
             os.makedirs("artikelen/"+waarnaartoestem)
             os.makedirs("artikelen/"+waarnaartoestem+"/parsed")
         except: 
-            print("Er ging iets mis met het aanmaken van de map /artikelen/"+waarnaartoe.split(".")[0]+" en de map /artikelen/"+waarnaartoe.split(".")[0]+"/parsed"+"\\Je zal even zelf moeten uitzoeken waar het probleem ligt.")
+            print("Er ging iets mis met het aanmaken van de map artikelen/"+waarnaartoestem+" en de map artikelen/"+waarnaartoestem+"/parsed"+"\nJe zal even zelf moeten uitzoeken waar het probleem ligt.")
     nieuweposts=0
     for post in d.entries:
         i=0
