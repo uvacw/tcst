@@ -34,7 +34,7 @@ urllib.request.install_opener(opener)
 
 
 
-def parse (medium, doc, ids):
+def parse (medium, doc, ids, titel):
     '''
     This is a function that calls the right parser
     It returns nothing, but saves the parsed contents to a series of 
@@ -43,33 +43,38 @@ def parse (medium, doc, ids):
 
     if medium=="nu" or medium=="nunieuw":
         print("I just chose the nu parser")
-        elements=parse_nu(doc,ids)
+        elements=parse_nu(doc,ids,titel)
     elif medium=="ad":
         print("I just chose ad parser.")
-        elements=parse_ad(doc,ids)
+        elements=parse_ad(doc,ids,titel)
     elif medium=="volkskrant":
         print("I just chose the VK-parser")
-        elements=parse_vk(doc,ids)
+        elements=parse_vk(doc,ids,titel)
     elif medium=="nrc":
         print("I just chose nrc parser")
-        elements=parse_nrc(doc,ids)
+        elements=parse_nrc(doc,ids,titel)
     elif medium=="telegraaf":
         print("I just chose Tele parser")
-        elements=parse_telegraaf(doc,ids)
+        elements=parse_telegraaf(doc,ids,titel)
     elif medium=="spits":
         print("I just chose Spits parser")
-        elements=parse_spits(doc,ids)
+        elements=parse_spits(doc,ids,titel)
     elif medium=="metronieuws":
         print("I just chose Metro parser")
-        elements=parse_metronieuws(doc,ids)
+        elements=parse_metronieuws(doc,ids,titel)
     else:
         print("Er bestaat nog geen parser voor"+medium)
         return
 
+    print("Type of elements is: ",type(elements))
+    listelements=list(elements)
+    print("Type of listelements is: ",type(listelements))
+    print(listelements)
     csvname="artikelen/"+medium+"/parsed/{0:06d}".format(len(ids))+".csv"   
     with open(csvname, mode="w",encoding="utf-8") as fit:
           writer=csv.writer(fit)
-          writer.writerows(elements)
+          for element in listelements:
+              writer.writerow([element,])
 
 
 
@@ -119,7 +124,7 @@ def checkfeeds(waarvandaan, waarnaartoe):
             except:
                 artikel_teaser.append("teaser empty")
             artikel_link.append(re.sub("/$","",post.link))
-            filename="artikelen/"+waarnaartoestem+"/{0:06d}".format(len(artikel_id))+".html" 
+            filename="artikelen/"+waarnaartoestem+"/"+waarnaartoestem+"{0:06d}".format(len(artikel_id))+".html" 
             #try:
             if 1==1:
                 if waarnaartoestem=="volkskrant":
@@ -139,19 +144,13 @@ def checkfeeds(waarvandaan, waarnaartoe):
                 artikelopslaan.close()
                 with open(filename,"r",encoding="utf-8",errors="ignore") as f: 
                   fx=f.read()
-                  parse(waarnaartoestem,fx,artikel_id)
+                  parse(waarnaartoestem,fx,artikel_id,re.sub(r"\n|\r\|\t"," ",post.title))
 
             #except:
             #    print("Het downloaden van "+re.sub("/$","",post.link)+" is niet gelukt.")
             #    print("Bestandsnaam: "+filename)
             #    filename="DOWNLOAD-ERROR"
             artikel_filename.append(filename)
-            #except:
-                #print("Something goes wrong with opening the file")
-                #parse(waarnaartoestem, f)
-            #except:
-                #print("AAaaAAAaaa")
-                #print(f)
             i=i=1
     output=list(zip(artikel_id,artikel_datum,artikel_kop,artikel_teaser,artikel_link,artikel_filename))
     with open(waarnaartoe,mode="w",encoding="utf-8") as csvfile:

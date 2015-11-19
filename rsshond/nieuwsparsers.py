@@ -17,14 +17,22 @@ from time import sleep
 from random import randint
 from lxml import html
 
+def polish(textstring):
+#This function polishes the full text of the articles - it separated the lead from the rest by ||| and separates paragraphs and subtitles by ||.
+    lines = textstring.strip().split('\n')
+    lead = lines[0].strip()
+    rest = '||'.join( [l.strip() for l in lines[1:] if l.strip()] )
+
+    if rest: result = lead + ' ||| ' + rest
+    else: result = lead
+   return result.strip()
 
 #Parser voor Volkskrant
-def parse_vk(doc,ids):
+def parse_vk(doc,ids,titel):
     try:
         tree = html.fromstring(doc)
     except:
         print("kon dit niet parsen",type(doc),len(doc))
-        #print(doc)
         return("","","", "")
     try:
         category=tree.xpath('//*[@class="action-bar__primary"]/div/a/text()')[0]
@@ -33,17 +41,11 @@ def parse_vk(doc,ids):
     if category=="":
         try:
             category=tree.xpath('//*[@class="action-bar__primary"]/a/text()')[0] 
-            #print("Category: ")
-            #print(category)
         except:
             category="" 
             print("oops - geen category")
     try:
         textfirstpara=tree.xpath('//*/header/p/text()')[0].replace("\n", "").strip()  
-        #print("First para: ")
-        #print(textfirstpara)
-        #print("Type")
-        #print(type(textfirstpara))
     except:
         textfirstpara=""
     if textfirstpara=="":
@@ -60,19 +62,15 @@ def parse_vk(doc,ids):
         #5. path: old design regular text
         #6. path: old design second heading
         #7. path:old design text with link        
-        textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p[*]/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/text() | //*[@id="art_box2"]/p/a/text() | //*/p[@class="article__body__paragraph first"]/text()')
+        textrest=tree.xpath('//*/div[@class="article__body"]/*/p[*]/text() | //*[@class="article__body__container"]/p[*]/text() | //*[@class="article__body__container"]/h3/text() | //*[@class="article__body__container"]/p/a/text() | //*[@id="art_box2"]/p/text() | //*[@id="art_box2"]/p/strong/text() | //*[@id="art_box2"]/p/a/text() | //*/p[@class="article__body__paragraph first"]/text() | //*/div[@class="article__body"]/h2/text()')
         #print("Text rest: ")
         #print(textrest)
     except:
         print("oops - geen text?")
         textrest=""
     text = textfirstpara + "\n"+ "\n".join(textrest)
-    #print("Text: ")
-    #print(text)
     try:
         author_door=" ".join(tree.xpath('//*/span[@class="author"]/*/text() | //*/span[@class="article__body__container"]/p/sub/strong/text()')).strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
-        #print("Author: ")
-        #print(author_door)
         # geeft het eerste veld: "Bewerkt \ door: Redactie"  
         if author_door=="edactie":
             author_door = "redactie"
@@ -111,8 +109,11 @@ def parse_vk(doc,ids):
                 print("oops - geen bron")
     if author_door=="" and author_bron=="" and category=="Opinie":
         author_door = "OPINION PIECE OTHER AUTHOR"
+    text=polish(text)
     print("Category: ")
     print(category)
+    print("Title: ")
+    print(titel)
     print("Text: ")
     print(text)
     print("Auhtor: ")
@@ -120,15 +121,14 @@ def parse_vk(doc,ids):
     print("Bron: ")
     print(author_bron)
 
-    return(text,category,author_door,author_bron)
+    return(titel,text.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
 
 
 
 #Parser voor Nu 
-def parse_nu(doc,ids):
+def parse_nu(doc,ids,titel):
     tree = html.fromstring(doc)
     try:
-        #category = tree.xpath('//*[@class="block-wrapper section-nu"]/div/ul/li[2]/a/text()')[0]
         category = tree.xpath('//*[@class="block breadcrumb "]/div/div/ul/li[2]/a/text()')[0]
         if category == "":
             print("OOps - geen category?")
@@ -136,7 +136,6 @@ def parse_nu(doc,ids):
         category=""
         print("OOps - geen category?")
     try:
-        #textfirstpara=tree.xpath('//*[@id="block-288801"]/div/div[1]/div[2]/text()')[0]
         textfirstpara=tree.xpath('//*[@data-type="article.header"]/div/div[1]/div[2]/text()')[0]
     except:
         print("OOps - geen eerste alinea?")
@@ -171,6 +170,9 @@ def parse_nu(doc,ids):
         author_door="" 
         print("OOps - geen author?")
     author_bron = ""
+    text=polish(text)
+    print("Title: ")
+    print(titel)
     print("Category: ")
     print(category)
     print("Text: ")
@@ -180,11 +182,11 @@ def parse_nu(doc,ids):
     print("Bron: ")
     print(author_bron)
 
-    return(text,category,author_door,author_bron)
+    return(titel,text.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
 
 
 #Parser for Nrc
-def parse_nrc(doc,ids):
+def parse_nrc(doc,ids,titel):
     try:
         tree = html.fromstring(doc)
     except:
@@ -200,7 +202,6 @@ def parse_nrc(doc,ids):
             category=tree.xpath('//*[@class="article__section-branding"]/text()')[0]
         except:
             category=""
-        #print("OOps - geen category for", ids, "?")
     try:
         #1. path: type 1 layout: regular text
         #2. path: type 1 layout: text with link behind
@@ -271,7 +272,6 @@ def parse_nrc(doc,ids):
         except:
             author_door = ""
     author_bron=""
-    #text=polish(text)
     if textnew=="" and category=="" and author_door=="":
         print("No article-page?")
         try:
@@ -280,6 +280,9 @@ def parse_nrc(doc,ids):
                 print(" This seems to be a subscribers-only article")   
         except:
             text=""
+    text=polish(text)
+    print("Title: ")
+    print(titel)
     print("Category: ")
     print(category)
     print("Text: ")
@@ -287,65 +290,14 @@ def parse_nrc(doc,ids):
     print("Auhtor: ")
     print(author_door)
 
-    return(text,category,author_door,author_bron)
+    return(titel,text.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
     
-def parse_ad(doc,ids):
+
+def parse_telegraaf(doc,ids,titel):
     try:
         tree = html.fromstring(doc)
     except:
         print("kon dit niet parsen",type(doc),len(doc))
-        #print(doc)
-        #return("","","", "")
-    try:
-        category = tree.xpath('//*[@id="actua_arrow"]/a/span/text()')[0]
-    except:
-        category=""
-        print("OOps - geen category?")
-    #1. path: regular intro
-    #2. path: intro when in <b>; found in a2014 04 130
-    textfirstpara=tree.xpath('//*[@id="detail_content"]/p/text() | //*[@class="intro"]/b/text()')
-    #1. path: regular text
-    #2. path: text with link behind (shown in blue underlined); found in 2014 12 1057
-    #3. path: second hadings found in 2014 11 1425
-    textrest = tree.xpath('//*[@id="detail_content"]/section/p/text() | //*[@id="detail_content"]/section/p/a/text() | //*[@id="detail_content"]/section/p/strong/text()')
-    text = "\n".join(textfirstpara) + "\n" + "\n".join(textrest)
-    try:
-        author_door = tree.xpath('//*[@class="author"]/text()')[0].strip().lstrip("Bewerkt").lstrip(" door:").lstrip("Door:").strip()
-    except:
-        author_door=""
-    if author_door=="":
-        try:
-            author_door = tree.xpath('//*[@class="author"]/a/text()')[0].strip().lstrip("Door:").strip()                       
-        except:
-            author_door==""
-            print("OOps - geen author?")
-    try:
-        brun_text = tree.xpath('//*[@class="author"]/text()')[1].replace("\n", "")
-        author_bron = re.findall(".*?bron:(.*)", brun_text)[0]
-    except:
-        author_bron=""    
-    #text=polish(text)
-    if text=="" and category=="" and author_door=="":
-        print("No article-page?")
-    print("Category: ")
-    print(category)
-    print("Text: ")
-    print(text)
-    print("Auhtor: ")
-    print(author_door)
-    print("Bron: ")
-    print(author_bron)
-
-    return(text,category,author_door,author_bron)
-
-
-
-def parse_telegraaf(doc,ids):
-    try:
-        tree = html.fromstring(doc)
-    except:
-        print("kon dit niet parsen",type(doc),len(doc))
-        #print(doc)
         return("","","","")
     try:
         category = tree.xpath('//*[@class="selekt"]/text()')[0]
@@ -371,12 +323,7 @@ def parse_telegraaf(doc,ids):
         #4. path: layout 1: bold text, fi 2014 12 25
         #5. path: layout 1: italic text, fi 2014 09 5200
         #6. path: layout 1: second headings, fi 2014 07 84
-        textrest=tree.xpath('//*[@id="artikelKolom"]/p/text() \
-        | //*[@id="artikelKolom"]/p/a/text() \
-        | //*[@id="artikelKolom"]/h2/strong/text() \
-        | //*[@id="artikelKolom"]/p/strong/text() \
-        | //*[@id="artikelKolom"]/p/em/text() \
-        | //*[@id="artikelKolom"]/h2[not (@class="destination trlist")]/text()')
+        textrest=tree.xpath('//*[@id="artikelKolom"]/p[not (@class="tiptelegraaflabel")]/text() | //*[@id="artikelKolom"]/p/a/text() | //*[@id="artikelKolom"]/h2/strong/text() | //*[@id="artikelKolom"]/p/strong/text() | //*[@id="artikelKolom"]/p/em/text() | //*[@id="artikelKolom"]/h2[not (@class="destination trlist")]/text() | //*[@class="broodtekst"]/p/text() | //*[@class="broodtext"]/h2/strong/text()')
     except:
         print("oops - geen texttest?")
         textrest = ""
@@ -386,25 +333,26 @@ def parse_telegraaf(doc,ids):
     except:
         author_door = ""
     author_bron=""
-    #text=polish(text)
+    text=polish(text)
+    print("Title: ")
+    print(titel)
     print("Category: ")
     print(category)
-    print("Text: ")
+    print("Text: ",type(text))
     print(text)
     print("Auhtor: ")
     print(author_door)
     print("Bron: ")
     print(author_bron)
 
-    return(text,category,author_door,author_bron)
+    return(titel,text.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
 
 
-def parse_spits(doc,ids):
+def parse_spits(doc,ids,titel):
     try:
         tree = html.fromstring(doc)
     except:
         print("kon dit niet parsen",type(doc),len(doc))
-        #print(doc)   
         return("","","","")
     try:
         category = tree.xpath('//*[@class="active"]/text()')[0]
@@ -450,11 +398,10 @@ def parse_spits(doc,ids):
         #32. path: another regular text, fi 2014 03 667
         #33. path: 2nd heading, matches 32. patch, fi 2014 03 667
         #33. path: text with link, matches 32. patch, fi 2014 03 667
-        textrest=tree.xpath('//*[@class="field-item even"]/p/text() | //*[@class="field-item even"]/p/a/text() | //*[@class="field-item even"]/p/em/text() | //*[@class="field-item even"]/h2/text() | //*[@class="field-item even"]/p/span/text() | //*[@class="field-item even"]/h2/span/text() | //*[@class="article"]/div/p/text() | //*[@class="field-item even"]/p/span/em/a/text() | //*[@class="field-item even"]/p/em/a/text() | //*[@class="article"]/p/a/text() | //*[@class="article"]/p/em/text() | //*[@class="article"]/p/strong/text() | //*[@class="article"]/div/text() | //*[@class="article"]/div/strong/text() | //*[@class="article"]/div/em/text() | //*[@class="article"]/div/div/p/text() | //*[@class="article"]/div/p/text() | //*[@class="article"]/p/em/a/text() | //*[@class="article"]/p/span/text() | //*[@class="article"]/p/span/a/text() | //*[@class="article"]/p/span/em/text() | //*[@class="article"]/p/a/em/text() | //*[@class="article"]/div/div/div/p/text() | //*[@class="article"]/div/div/text() | //*[@class="article"]/div/div/a/text() | //*[@class="article"]/div/div/strong/text() |//*[@id="artikelKolom"]/div/div/p/text() | //*[@id="artikelKolom"]/div/div/p/em/text() | //*[@class="article"]/p/font/text() | //*[@class="article"]/p/font/a/text() | //*[@class="article"]/div/div/div/text() | //*[@class="article"]/div/div/div/strong/text() | //*[@class="article"]/div/div/div/a/text()')
+        textrest=tree.xpath('//*[@class="field field-name-body field-type-text-with-summary field-label-hidden"]/div/div/p/text() | //*[@class="field field-name-body field-type-text-with-summary field-label-hidden"]/div/div/p/a/text() | //*[@class="field field-name-body field-type-text-with-summary field-label-hidden"]/div/div/p/em/text() | //*[@class="field field-name-body field-type-text-with-summary field-label-hidden"]/div/div/h2/text() | //*[@class="field field-name-body field-type-text-with-summary field-label-hidden"]/div/div/p/span/text() | //*[@class="field field-name-body field-type-text-with-summary field-label-hidden"]/div/div/h2/span/text() | //*[@class="article"]/div/p/text() | //*[@class="field field-name-body field-type-text-with-summary field-label-hidden"]/div/div/p/span/em/a/text() | //*[@class="field field-name-body field-type-text-with-summary field-label-hidden"]/div/div/p/em/a/text() | //*[@class="article"]/p/a/text() | //*[@class="article"]/p/em/text() | //*[@class="article"]/p/strong/text() | //*[@class="article"]/div/text() | //*[@class="article"]/div/strong/text() | //*[@class="article"]/div/em/text() | //*[@class="article"]/div/div/p/text() | //*[@class="article"]/div/p/text() | //*[@class="article"]/p/em/a/text() | //*[@class="article"]/p/span/text() | //*[@class="article"]/p/span/a/text() | //*[@class="article"]/p/span/em/text() | //*[@class="article"]/p/a/em/text() | //*[@class="article"]/div/div/div/p/text() | //*[@class="article"]/div/div/text() | //*[@class="article"]/div/div/a/text() | //*[@class="article"]/div/div/strong/text() |//*[@id="artikelKolom"]/div/div/p/text() | //*[@id="artikelKolom"]/div/div/p/em/text() | //*[@class="article"]/p/font/text() | //*[@class="article"]/p/font/a/text() | //*[@class="article"]/div/div/div/text() | //*[@class="article"]/div/div/div/strong/text() | //*[@class="article"]/div/div/div/a/text() |  //*[@class="field field-name-body field-type-text-with-summary field-label-hidden"]/div/div/p/strong/text() |  //*[@class="field field-name-body field-type-text-with-summary field-label-hidden"]/div/div/ul/li/text()')
     except:
         print("oops - geen texttest?")
         textrest = ""
-    #text = textfirstpara + "\n"+ "\n".join(textrest)
     text = "\n".join(textrest)
     try:
         #new layout author:
@@ -468,7 +415,9 @@ def parse_spits(doc,ids):
         except:
             author_door = ""        
     author_bron=""
-    #text=polish(text)
+    text=polish(text)
+    print("Title: ")
+    print(titel)
     print("Category: ")
     print(category)
     print("Text: ")
@@ -478,21 +427,19 @@ def parse_spits(doc,ids):
     print("Bron: ")
     print(author_bron)
 
-    return(text,category,author_door,author_bron)
+    return(titel,text.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
 
 
-def parse_metronieuws(doc,ids):
+def parse_metronieuws(doc,ids,titel):
     try:
         tree = html.fromstring(doc)
     except:
         print("kon dit niet parsen",type(doc),len(doc))
-        #print(doc)   
         return("","","","")
     try:
         category = tree.xpath('//*[@class="active"]/text()')[0]
     except:
         category = ""
-        #print("OOps - geen category for", ids, "?")
     #fix: xpath for category in new layout leads to a sentence in old layout:
     if len(category.split(" ")) >1:
         category=""            
@@ -514,8 +461,6 @@ def parse_metronieuws(doc,ids):
     except:
         print("oops - geen textrest?")
         textrest = ""
-        #text = textfirstpara + "\n"+ "\n".join(textrest)
-        #textnew=re.sub("Lees ook:"," ",textrest)
     text = "\n".join(textrest)
     textnew=re.sub("Lees ook:"," ",text)
     try:
@@ -530,7 +475,9 @@ def parse_metronieuws(doc,ids):
         except:
             author_door = ""        
     author_bron=""
-    #text=polish(text)
+    textnew=polish(textnew)
+    print("Titel: ")
+    print(titel)
     print("Category: ")
     print(category)
     print("Text: ")
@@ -540,7 +487,7 @@ def parse_metronieuws(doc,ids):
     print("Bron: ")
     print(author_bron)
 
-    return(text,category,author_door,author_bron)
+    return(titel,text.strip(),category.strip(),author_door.replace("\n", " ").strip(),author_bron.replace("\n"," ").strip())
  
 if __name__ == "__main__":
      print("\n")
