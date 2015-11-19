@@ -25,7 +25,7 @@ def polish(textstring):
 
     if rest: result = lead + ' ||| ' + rest
     else: result = lead
-   return result.strip()
+    return result.strip()
 
 #Parser voor Volkskrant
 def parse_vk(doc,ids,titel):
