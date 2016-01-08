@@ -12,6 +12,9 @@ import csv
 import os
 import datetime
 import urllib
+
+#import http.cookiejar
+
 from urllib import request
 from time import sleep
 from random import randint
@@ -44,9 +47,9 @@ def parse (medium, doc, ids, titel):
     if medium=="nu" or medium=="nunieuw":
         print("I just chose the nu parser")
         elements=parse_nu(doc,ids,titel)
-    elif medium=="ad":
-        print("I just chose ad parser.")
-        elements=parse_ad(doc,ids,titel)
+    #elif medium=="ad":
+        #print("I just chose ad parser.")
+        #elements=parse_ad(doc,ids,titel)
     elif medium=="volkskrant":
         print("I just chose the VK-parser")
         elements=parse_vk(doc,ids,titel)
@@ -130,15 +133,31 @@ def checkfeeds(waarvandaan, waarnaartoe):
                 if waarnaartoestem=="volkskrant":
                     mylink=re.sub("/$","",post.link)
                     mylink="http://www.volkskrant.nl//cookiewall/accept?url="+mylink
-                    req=urllib.request.Request((mylink), headers={'User-Agent' : "Wget/1.9"})          
+                    #req=urllib.request.Request((mylink), headers={'User-Agent' : "Wget/1.9"})          
+                    req=urllib.request.Request((mylink))          
                 elif waarnaartoestem=="ad":
                     mylink=re.sub("/$","",post.link)
                     mylink="http://www.ad.nl/ad/acceptCookieCheck.do?url="+mylink
-                    req=urllib.request.Request((mylink), headers={'User-Agent' : "Wget/1.9"})
+                    #req=urllib.request.Request((mylink), headers={'User-Agent' : "Wget/1.9"})
+                    req=urllib.request.Request((mylink))
+                elif waarnaartoestem=="trouw":
+                    mylink=re.sub("/$","",post.link)
+                    mylink="http://www.trouw.nl/tr/acceptCookieCheck.do?url="+mylink
+                    #req=urllib.request.Request((mylink), headers={'User-Agent' : "Wget/1.9"})
+                    req=urllib.request.Request((mylink))
+                elif waarnaartoestem=="parool":
+                    mylink=re.sub("/$","",post.link)
+                    mylink="http://www.parool.nl/parool/acceptCookieCheck.do?url="+mylink
+                    #req=urllib.request.Request((mylink), headers={'User-Agent' : "Wget/1.9"})
+                    req=urllib.request.Request((mylink))
+                    print(mylink)
                 else: 
                     req=urllib.request.Request(re.sub("/$","",post.link), headers={'User-Agent' : "Wget/1.9"})
                 response = urllib.request.urlopen(req)
                 #httpcode=response.getcode()
+                #cj=http.cookiejar.CookieJar()
+                #opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
+                #response=opener.open(re.sub("/$","",post.link))
                 artikelopslaan=open(filename,mode="w",encoding="utf-8")
                 artikelopslaan.write(response.read().decode(encoding="utf-8",errors="ignore"))
                 artikelopslaan.close()
