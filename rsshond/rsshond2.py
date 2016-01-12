@@ -65,14 +65,35 @@ def parse (medium, doc, ids, titel):
     elif medium=="metronieuws":
         print("I just chose Metro parser")
         elements=parse_metronieuws(doc,ids,titel)
+    elif medium=="trouw":
+        print("I just chose Trouw parser")
+        elements=parse_trouw(doc,ids,titel)
+    elif medium=="parool":
+        print("I just chose Parool parser")
+        elements=parse_parool(doc,ids,titel)
+    elif medium=="nos":
+        print("I just chose NOS parser")
+        elements=parse_nos(doc,ids,titel)
+    elif medium=="tpo":
+        print("I just chose Tpo parser")
+        elements=parse_tpo(doc,ids,titel)
+    elif medium=="geenstijl":
+        print("I just chose Geenstijl parser")
+        elements=parse_geenstijl(doc,ids,titel)
+    elif medium=="sargasso":
+        print("I just chose Sargasso parser")
+        elements=parse_sargasso(doc,ids,titel)
+    elif medium=="fok":
+        print("I just chose Fok parser")
+        elements=parse_fok(doc,ids,titel)
     else:
-        print("Er bestaat nog geen parser voor"+medium)
+        print("Er bestaat nog geen parser voor "+medium)
         return
 
-    print("Type of elements is: ",type(elements))
+    #print("Type of elements is: ",type(elements))
     listelements=list(elements)
-    print("Type of listelements is: ",type(listelements))
-    print(listelements)
+    #print("Type of listelements is: ",type(listelements))
+    #print(listelements)
     csvname="artikelen/"+medium+"/parsed/{0:06d}".format(len(ids))+".csv"   
     with open(csvname, mode="w",encoding="utf-8") as fit:
           writer=csv.writer(fit)
