@@ -1,21 +1,25 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from __future__ import division
-from __future__ import unicode_literals
 from twitter import *
-from io import open
 import json
 import time
+import csv
+
+consumer_key = ""
+consumer_secret = ""
+access_key = ""
+access_secret = ""
 
 
-consumer_key = "INSERTKEYHERE"
-consumer_secret = "INSERTKEYHERE"
-access_key = "INSERTKEYHERE"
-access_secret = "INSERTKEYHERE"
+#screennames=["polcomm","uvacw","ALLTHENENAMESYOUWANTTOFOLLOW"]
 
+screennames=[]
+with open('../input/accounts.csv', encoding='utf-8') as fi:
+	reader=csv.reader(fi)
+	for row in reader:
+		screennames.append(row[1].strip().lstrip('@'))
 
-screennames=["polcomm","uvacw","ALLTHENENAMESYOUWANTTOFOLLOW"]
 
 
 auth = OAuth(access_key, access_secret, consumer_key, consumer_secret)
@@ -31,9 +35,9 @@ def getposts(tweep, maxid):
 	global start_time
 	global apicallsin15min
 	if time.time()-start_time<870 and apicallsin15min >178:
-		print "We issued "+str(apicallsin15min)+" API requests in the last "+str(int(time.time()-start_time))+" seconds. Twitter allows 180 calls per 900 seconds. We will wait for "+str(int(900-(time.time()-start_time)))+" seconds."
+		print ("We issued "+str(apicallsin15min)+" API requests in the last "+str(int(time.time()-start_time))+" seconds. Twitter allows 180 calls per 900 seconds. We will wait for "+str(int(900-(time.time()-start_time)))+" seconds.")
 		time.sleep(900-(time.time()-start_time))
-		print "Let's continue!"
+		print ("Let's continue!")
 		# reset timer and apicall-counter
 		apicallsin15min=0
 		start_time=time.time()	
@@ -59,8 +63,8 @@ allposts={}
 i=0
 for tweep in screennames:
 	i+=1
-	print "Starting to collect tweets by",tweep,"("+str(i)+"/"+str(len(screennames))+")"
-	print "API-calls in the last 15 minutes:",apicallsin15min
+	print ("Starting to collect tweets by",tweep,"("+str(i)+"/"+str(len(screennames))+")")
+	print ("API-calls in the last 15 minutes:"+str(apicallsin15min))
 	posts=getposts(tweep,None)
 	nieuweposts=posts
 	while len(posts) < 3001:
@@ -71,23 +75,23 @@ for tweep in screennames:
 		nieuweposts=getposts(tweep,maxid)
 		if len(nieuweposts)<=1:
 			break
-		print "\tDownloaded a batch of",len(nieuweposts),"tweets - continuing..."
+		print ("\tDownloaded a batch of"+str(len(nieuweposts))+"tweets - continuing...")
 		posts+=nieuweposts
 	allposts[tweep]=posts
-	print "Downloaded",len(posts),"tweets by",tweep
+	print ("Downloaded"+str(len(posts))+"tweets by"+tweep)
 
 # volledige dump	
 #with open("output/allposts.json",encoding="utf-8",mode="w") as fo:
 #	fo.write(json.dumps(allposts, ensure_ascii=False,indent=1))
 
-with open("output/allposts.json",mode="wb") as fo:	
+with open("../output/allposts.json",mode="w") as fo:	
 	json.dump(allposts,fo)
 
 # per username
 
 for tweep in screennames:
-	print "writing data for",tweep
-	with open("output/"+tweep+".tab", encoding="utf-8", mode = "w") as fo:
+	print ("writing data for "+tweep)
+	with open("../output/"+tweep+".tab", encoding="utf-8", mode = "w") as fo:
 		headers=["text","retweeted","retweet_count","hashtags","urls","created_at","description","screen_name","name","friends_count","followers_count","statuses_count"]
 		fo.write("\t".join(headers)+"\n")
 		for post in allposts[tweep]:
